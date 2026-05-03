@@ -1,0 +1,67 @@
+/* 
+ * Horizontal Wrapper
+ */
+
+.w-hwrapper {
+	display: flex;
+	align-items: center;
+	}
+.w-hwrapper.wrap {
+	flex-wrap: wrap;
+	}
+
+/* Align */
+.w-hwrapper.align_center {
+	justify-content: center;
+	}
+	.w-hwrapper.align_center > * {
+		margin-left: calc( var(--hwrapper-gap, 1.2rem) / 2 );
+		margin-right: calc( var(--hwrapper-gap, 1.2rem) / 2 );
+		}
+	.w-hwrapper:not(.align_center) > * {
+		margin-left: var(--hwrapper-gap, 1.2rem);
+		margin-right: var(--hwrapper-gap, 1.2rem);
+		}
+.w-hwrapper.align_justify {
+	justify-content: space-between;
+	}
+
+/* rtl class is needed to avoid double overriding of CSS */
+.rtl .w-hwrapper.align_left,
+body:not(.rtl) .w-hwrapper.align_right {
+	justify-content: flex-end;
+	}
+	.w-hwrapper.align_left > *,
+	.w-hwrapper.align_justify > *,
+	body:not(.rtl) .w-hwrapper.align_none > *,
+	body:not(.rtl) .w-hwrapper.align_right > *:first-child,
+	.rtl .w-hwrapper.align_right > *:last-child,
+	.rtl .w-hwrapper.align_none > *:last-child {
+		margin-left: 0;
+		}
+	.w-hwrapper.align_right > *,
+	.w-hwrapper.align_justify > *:last-child,
+	body:not(.rtl) .w-hwrapper.align_none > *:last-child,
+	body:not(.rtl) .w-hwrapper.align_left > *:last-child,
+	.rtl .w-hwrapper.align_left > *:first-child,
+	.rtl .w-hwrapper.align_none > * {
+		margin-right: 0;
+		}
+
+/* Valign */
+.w-hwrapper.valign_stretch {
+	align-items: stretch;
+	}
+.w-hwrapper.valign_top {
+	align-items: flex-start;
+	}
+.w-hwrapper.valign_bottom {
+	align-items: flex-end;
+	}
+.w-hwrapper.valign_baseline {
+	display: block;
+	}
+	.w-hwrapper.valign_baseline > *:not(style) {
+		display: inline-block;
+		vertical-align: baseline !important;
+		}

@@ -1,0 +1,467 @@
+<?php
+/* Custom functions code goes here. */
+// Disable Gutenberg on the back end.
+add_filter( 'use_block_editor_for_post', '__return_false' );
+
+// Disable Gutenberg for widgets.
+add_filter( 'use_widgets_block_editor', '__return_false' );
+
+
+/* Custom functions code goes here. */
+// Disable Gutenberg on the back end.
+add_filter( 'use_block_editor_for_post', '__return_false' );
+
+// Disable Gutenberg for widgets.
+add_filter( 'use_widgets_block_editor', '__return_false' );
+
+// Custom Wp-Admin Css
+function admin_style() {
+    echo '<style>
+    #toplevel_page_us-theme-options ul li:nth-child(7), 
+    #toplevel_page_us-theme-options ul li:nth-child(8), 
+    #toplevel_page_us-theme-options ul li:nth-child(9)
+    {
+        display: none;
+    }
+  </style>';
+}
+add_action('admin_head', 'admin_style');
+
+//Flavour Categories Function
+function flavour_cat(){
+
+    // Get the global post object
+    global $post, $product;
+
+    // Check if the current post is a WooCommerce product
+    if (get_post_type($post->ID) !== 'product') {
+        return 'This shortcode can only be used on product pages.';
+    }
+
+    // Get the terms of the specified taxonomy for the product
+    $terms = wp_get_post_terms($post->ID, 'flavour-categories');
+
+    // If no terms found, return a message
+    if (empty($terms) || is_wp_error($terms)) {
+        return 'No terms found for this product.';
+    }
+
+    // Create a string of term names
+    $term_names = array();
+	$term_ids = array();
+	$term_url = array();
+//  	print_r($terms);
+    foreach ($terms as $term) {
+        $term_names[] = $term->name;
+		$term_ids[] = $term->term_id;
+		$term_url[] = $term->slug;
+    }
+
+    $term_list = implode(', ', $term_names);
+	$term_ids_list = implode(', ', $term_ids);
+	$term_url_name = implode(', ', $term_url);
+	
+	?>
+ 	<div class="fl-tag <?php echo $term_url_name;?>">
+        <?php 
+		$image = get_field('flavour_thumbnail_image', 'flavour-categories_' . $term_ids_list);
+		if( !empty( $image ) ): ?>
+			<img src="<?php echo esc_url($image['url']); ?>" alt="<?php echo esc_attr($image['alt']); ?>" />
+		<?php endif; ?>
+        <?php echo $term_list; ?>
+    </div> 
+<?php
+}
+add_shortcode('flavour_cat_name','flavour_cat');
+
+//New Badge Function
+function display_new_badge() {
+    global $product;
+
+    if (!$product) {
+        return '';
+    }
+
+    $product_id = $product->get_id();
+
+    $days = 30; // You can change this value as needed
+    $post_date = get_the_date('Y-m-d', $product_id);
+    $current_date = date('Y-m-d');
+
+    $date_diff = strtotime($current_date) - strtotime($post_date);
+    $days_diff = round($date_diff / (60 * 60 * 24));
+
+    if ($days_diff <= $days) {
+        return '<span class="badge new-badge">New</span>';
+    }
+
+    return '';
+}
+add_shortcode('new_badge', 'display_new_badge');
+
+//Best Seller Function
+function display_best_seller_badge() {
+    global $product;
+
+    if (!$product) {
+        return '';
+    }
+
+    $product_id = $product->get_id();
+
+    $threshold = 100; // Set the number of sales to be considered a best seller
+    $total_sales = get_post_meta($product_id, 'total_sales', true);
+
+    if ($total_sales >= $threshold) {
+        return '<span class="badge best-seller-badge">Best</span>';
+    }
+
+    return '';
+}
+add_shortcode('best_seller_badge', 'display_best_seller_badge');
+
+//Font Upload
+add_filter('upload_mimes', 'add_custom_upload_mimes');
+function add_custom_upload_mimes($existing_mimes) {
+	$existing_mimes['otf'] = 'application/x-font-otf';
+	$existing_mimes['woff'] = 'application/x-font-woff';
+	$existing_mimes['ttf'] = 'application/x-font-ttf';
+	$existing_mimes['eot'] = 'application/vnd.ms-fontobject';
+	return $existing_mimes;
+}
+
+//Custom Categories Fetch
+function woo_parent_and_child_categories_list_shortcode($atts) {
+    // Shortcode attributes
+    $atts = shortcode_atts(
+        array(
+            'parent' => '', // Parent category ID
+        ),
+        $atts,
+        'parent_and_child_categories'
+    );
+
+    // Ensure the parent ID is set
+    if (!$atts['parent']) {
+        return 'Please provide a parent category ID.';
+    }
+
+    // Get the parent category
+    $parent_category = get_term_by('id', $atts['parent'], 'product_cat');
+    if (!$parent_category) {
+        return 'Parent category not found.';
+    }
+
+    // Get child categories
+    $args = array(
+        'taxonomy'   => 'product_cat',
+        'child_of'   => $atts['parent'],
+        'hide_empty' => false,
+    );
+
+    $child_categories = get_terms($args);
+
+    $cate = get_queried_object();
+    //print_r($cate);
+    $cateID = $cate->term_id;
+    //echo $cateID;
+
+    // Start output buffer
+    ob_start();
+
+    echo '<ul class="woocommerce-parent-and-child-categories">';
+
+    // Display parent category
+    $parent_link = get_term_link($parent_category);
+    $parent_thumbnail_id = get_term_meta($parent_category->term_id, 'thumbnail_id', true);
+    $parent_image_url = wp_get_attachment_url($parent_thumbnail_id);
+    $parent_product_count = $parent_category->count;
+
+    echo '<li class="parent-category">';
+    if ($parent_image_url) {
+        echo '<a href="' . esc_url($parent_link) . '">';
+        echo '<img src="' . esc_url($parent_image_url) . '" alt="' . esc_attr($parent_category->name) . '">';
+        echo '</a>';
+    }
+    echo '<div class="category-info">';
+    echo '<h3><a href="' . esc_url($parent_link) . '">' . esc_html($parent_category->name) . '</a></h3>';
+    //echo '<span class="product-count">' . $parent_product_count . '</span>';
+    echo '</div>';
+    echo '</li>';
+
+    // Display child categories
+    if (!empty($child_categories)) {
+        foreach ($child_categories as $category) {
+            $category_link = get_term_link($category);
+            $thumbnail_id = get_term_meta($category->term_id, 'thumbnail_id', true);
+            $image_url = wp_get_attachment_url($thumbnail_id);
+            $product_count = $category->count;
+            $activeClass = "";
+            if($category->term_id == $cateID){
+                $activeClass = "activeCat";
+            }
+            echo '<li class="'.$activeClass.'">';
+            if ($image_url) {
+                echo '<a href="' . esc_url($category_link) . '" class="cat-img '.$activeClass.'">';
+                echo '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($category->name) . '">';
+                echo '</a>';
+            }
+            echo '<div class="category-info">';
+            echo '<h3><a href="' . esc_url($category_link) . '">' . esc_html($category->name) . '</a></h3>';
+            echo '<span class="product-count">' . $product_count . '</span>';
+            echo '</div>';
+            echo '</li>';
+        }
+    } else {
+        echo '<li>No child categories found.</li>';
+    }
+
+    echo '</ul>';
+
+    // Return the buffered content
+    return ob_get_clean();
+}
+
+add_shortcode('parent_and_child_categories', 'woo_parent_and_child_categories_list_shortcode');
+
+function enqueue_custom_woocommerce_styles() {
+    // Check if WooCommerce is active
+    if ( class_exists( 'WooCommerce' ) ) {
+        // Enqueue the custom CSS file
+        wp_enqueue_style( 'custom-woocommerce', get_stylesheet_directory_uri() . '/custom_css.css', array(), '1.0.0' );
+    }
+}
+add_action( 'wp_enqueue_scripts', 'enqueue_custom_woocommerce_styles', 20 );
+
+add_action("wp_head","add_js_call");
+function add_js_call(){
+    ?>
+    <script type="text/javascript">
+        jQuery(document).ready(function(){
+
+            let cart_content_count = "<?php echo WC()->cart->get_cart_contents_count(); ?>";
+            jQuery('#sidecartOpenID').append("<span class='cartCounter'>"+cart_content_count+"</span>"); // Update your cart count element
+
+
+            jQuery("#sidecartOpenID").click(function(){
+                jQuery(".vi-wcaio-sidebar-cart-icon-wrap-open").trigger("click");
+            });
+
+            jQuery(".w-socials-item-link").removeAttr("target");
+            <?php if(!is_user_logged_in()): ?>
+                jQuery(".w-socials-item-link").attr("href","<?php echo home_url('/login/'); ?>");
+            <?php endif; ?>
+        })
+        jQuery(function($){
+            $(document.body).on('added_to_cart', function(){
+                $.ajax({
+                    url: wc_add_to_cart_params.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'woocommerce_get_cart_count',
+                    },
+                    success: function(response) {
+                        // console.warn("response",response);
+                        $('#sidecartOpenID .cartCounter').remove();
+                        $('#sidecartOpenID').append("<span class='cartCounter'>"+response+"</span>"); // Update your cart count element
+                    }
+                });
+            });
+        });
+    </script>
+    <?php
+}
+
+add_action('wp_ajax_woocommerce_get_cart_count', 'get_cart_count_ajax');
+add_action('wp_ajax_nopriv_woocommerce_get_cart_count', 'get_cart_count_ajax');
+
+function get_cart_count_ajax() {
+    echo WC()->cart->get_cart_contents_count();
+    wp_die(); // Required to terminate AJAX requests properly.
+}
+
+
+function custom_logout_redirect() {
+    wp_redirect(home_url('/login/')); // Change '/your-page-slug/' to your desired URL.
+    exit();
+}
+add_action('wp_logout', 'custom_logout_redirect');
+
+function redirect_my_account_to_login() {
+    if (is_page('my-account') && !is_user_logged_in()) {
+        wp_redirect(home_url('/login/'));
+        exit();
+    }
+}
+add_action('template_redirect', 'redirect_my_account_to_login');
+
+function producttags_link_shortcode() 
+{
+   
+    global $product;
+    echo '<div class="producttagsbox">';
+    echo '<div class="producttagshead">';
+    echo 'Flavour Notes';
+    echo '</div>'; 
+    ;
+    echo '<div class="producttags">';
+$tags = $product->tag_ids;
+foreach($tags as $tag) {
+    if(!next($tags)) {
+        echo get_term($tag)->name;
+    }
+    else{
+   echo get_term($tag)->name.', ';
+    }
+
+}
+echo '</div>'; 
+echo '</div>'; 
+}
+add_shortcode('producttags', 'producttags_link_shortcode');
+
+function add_continue_shipping_link() {
+    // Replace the URL below with the link to your shop or the page you want users to continue shopping on.
+    $shop_page_url = get_permalink( wc_get_page_id( 'shop' ) );
+    echo '<div class="continue-shopping">';
+    echo '<a href="' . esc_url( $shop_page_url ) . '" class="continue_shopping continue_btn"><img src="https://naivo.in/wp-content/uploads/2024/09/ph_arrow-down.png" alt="back arrow"> Continue Shopping</a>';
+    echo '</div>';
+}
+add_action( 'woocommerce_after_cart_table', 'add_continue_shipping_link' );
+
+add_filter('woocommerce_currency_symbol', 'change_existing_currency_symbol', 
+10, 2);
+
+function change_existing_currency_symbol( $currency_symbol, $currency ) {
+ switch( $currency ) {
+      case 'INR': $currency_symbol = '₹'; break;
+ }
+ return $currency_symbol;
+}
+add_filter( 'woocommerce_get_price_html', 'change_variable_products_price_display', 10, 2 );
+function change_variable_products_price_display( $price, $product ) {
+
+    // Only for variable products type
+    if( ! $product->is_type('variable') ) return $price;
+
+    $prices = $product->get_variation_prices( true );
+
+    if ( empty( $prices['price'] ) )
+        return apply_filters( 'woocommerce_variable_empty_price_html', '', $product );
+
+    $min_price = current( $prices['price'] );
+    $max_price = end( $prices['price'] );
+    $prefix_html = '<span class="price-prefix fromprice">' . __('from  ') . '</span>';
+
+    $prefix = $min_price !== $max_price ? $prefix_html : ''; // HERE the prefix
+
+    return apply_filters( 'woocommerce_variable_price_html', $prefix . wc_price( $min_price ) . $product->get_price_suffix(), $product );
+}
+
+
+
+/**
+ * @snippet       Add Custom Field @ WooCommerce Checkout Page
+ * @how-to        Get CustomizeWoo.com FREE
+ * @author        Rodolfo Melogli
+ * @testedwith    WooCommerce 6
+ * @community     https://businessbloomer.com/club/
+ */
+  
+ add_action( 'woocommerce_before_order_notes', 'bbloomer_add_custom_checkout_field' );
+  
+ function bbloomer_add_custom_checkout_field( $checkout ) { 
+    $current_user = wp_get_current_user();
+    $saved_gstin_no = $current_user->gstin_no;
+    woocommerce_form_field( 'gstin_no', array(        
+       'type' => 'text',        
+       'class' => array( 'form-row-wide' ),        
+       'label' => 'GSTIN Number',        
+       'placeholder' => '',        
+       'required' => false,         
+       'default' => $saved_gstin_no,        
+    ), $checkout->get_value( 'gstin_no' ) ); 
+ }
+ /**
+ * @snippet       Validate Custom Field @ WooCommerce Checkout Page
+ * @how-to        Get CustomizeWoo.com FREE
+ * @author        Rodolfo Melogli
+ * @testedwith    WooCommerce 6
+ * @community     https://businessbloomer.com/club/
+ */
+ 
+//add_action( 'woocommerce_checkout_process', 'bbloomer_validate_new_checkout_field' );
+  
+//function bbloomer_validate_new_checkout_field() {    
+   //if ( ! $_POST['gstin_no'] ) {
+      //wc_add_notice( 'Please enter your GSTIN Number', 'error' );
+   //}
+//}
+
+/**
+ * @snippet       Save & Display Custom Field @ WooCommerce Order
+ * @how-to        Get CustomizeWoo.com FREE
+ * @author        Rodolfo Melogli
+ * @testedwith    WooCommerce 6
+ * @community     https://businessbloomer.com/club/
+ */
+ 
+ add_action( 'woocommerce_checkout_update_order_meta', 'bbloomer_save_new_checkout_field' );
+  
+ function bbloomer_save_new_checkout_field( $order_id ) { 
+     if ( $_POST['gstin_no'] ) update_post_meta( $order_id, '_gstin_no', esc_attr( $_POST['gstin_no'] ) );
+ }
+  
+ add_action( 'woocommerce_thankyou', 'bbloomer_show_new_checkout_field_thankyou' );
+    
+ function bbloomer_show_new_checkout_field_thankyou( $order_id ) {    
+    if ( get_post_meta( $order_id, '_gstin_no', true ) ) echo '<p><strong>GSTIN Number:</strong> ' . get_post_meta( $order_id, '_gstin_no', true ) . '</p>';
+ }
+   
+ add_action( 'woocommerce_admin_order_data_after_billing_address', 'bbloomer_show_new_checkout_field_order' );
+    
+ function bbloomer_show_new_checkout_field_order( $order ) {    
+    $order_id = $order->get_id();
+    if ( get_post_meta( $order_id, '_gstin_no', true ) ) echo '<p><strong>GSTIN Number:</strong> ' . get_post_meta( $order_id, '_gstin_no', true ) . '</p>';
+ }
+  
+ add_action( 'woocommerce_email_after_order_table', 'bbloomer_show_new_checkout_field_emails', 20, 4 );
+   
+ function bbloomer_show_new_checkout_field_emails( $order, $sent_to_admin, $plain_text, $email ) {
+     if ( get_post_meta( $order->get_id(), '_gstin_no', true ) ) echo '<p><strong>GSTIN Number:</strong> ' . get_post_meta( $order->get_id(), '_gstin_no', true ) . '</p>';
+ }
+ 
+
+ add_action( 'wpo_wcpdf_after_order_data', 'wpo_wcpdf_delivery_date', 10, 2 );
+ function wpo_wcpdf_delivery_date ($template_type, $order) {
+     if ($template_type == 'invoice') {
+         ?>
+         <tr class="delivery-date">
+             <th>GSTIN Number:</th>
+             <td><?php  echo get_post_meta( $order->get_id(), '_gstin_no', true ) ; ?></td>
+         </tr>
+         <?php
+     }
+ }
+
+ /**
+ * You can add a custom placeholder to add a hint for your CUs what you expect.
+ * Our hooked in function - $fields is passed via the filter.
+ */
+//add_filter( 'woocommerce_checkout_fields', function ( $fields ) {
+	//$fields['billing']['billing_phone']['placeholder'] = '09XXXXXXXXX';
+	//return $fields;
+//} );
+
+/**
+ * Process the checkout.
+ * Validation for phone field this will throw an error message.
+ */
+add_action( 'woocommerce_checkout_process', function () {
+	global $woocommerce;
+	// Check if set, if its not set add an error. This one is only requite for companies.
+	if ( ! preg_match( '/^[0-9]{10}$/D', $_POST['billing_phone'] ) ) {
+		wc_add_notice( '<strong>Billing Phone</strong> should contain only 10 digits.', 'error' );
+	}
+} );
+

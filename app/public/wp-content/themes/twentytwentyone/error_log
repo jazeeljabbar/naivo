@@ -1,0 +1,16 @@
+[15-Sep-2024 13:52:48 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function get_header() in /home/xugs2h2wx9j0/public_html/naivo/wp-content/themes/twentytwentyone/page.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/xugs2h2wx9j0/public_html/naivo/wp-content/themes/twentytwentyone/page.php on line 12
+[15-Sep-2024 13:52:49 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function get_header() in /home/xugs2h2wx9j0/public_html/naivo/wp-content/themes/twentytwentyone/page.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/xugs2h2wx9j0/public_html/naivo/wp-content/themes/twentytwentyone/page.php on line 12
+[15-Sep-2024 14:40:04 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function get_header() in /home/xugs2h2wx9j0/public_html/naivo/wp-content/themes/twentytwentyone/page.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/xugs2h2wx9j0/public_html/naivo/wp-content/themes/twentytwentyone/page.php on line 12
+[15-Sep-2024 14:40:06 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function get_header() in /home/xugs2h2wx9j0/public_html/naivo/wp-content/themes/twentytwentyone/page.php:12
+Stack trace:
+#0 {main}
+  thrown in /home/xugs2h2wx9j0/public_html/naivo/wp-content/themes/twentytwentyone/page.php on line 12

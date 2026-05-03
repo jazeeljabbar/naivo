@@ -1,0 +1,24 @@
+<wpml-config>
+  <taxonomies>
+    <taxonomy translate="1" display-as-translated="1">shop_coupon_cat</taxonomy>
+  </taxonomies>
+  <custom-fields>
+    <custom-field action="translate" style="textarea" label="Coupon applied message">_wt_sc_coupon_applied_message</custom-field>
+  </custom-fields>
+  <admin-texts>
+    <key name="wt-smart-coupon-for-woo">
+      <key name="wt_endpoint_title"/>
+    </key>
+    <key name="wt-smart-coupon-for-woo_coupon_banner">
+      <key name="banner_title">
+        <key name="title"/>
+      </key>
+      <key name="banner_description">
+        <key name="title"/>
+      </key>
+      <key name="coupon_timer">
+        <key name="expiry_text"/>
+      </key>
+    </key>
+  </admin-texts>
+</wpml-config>

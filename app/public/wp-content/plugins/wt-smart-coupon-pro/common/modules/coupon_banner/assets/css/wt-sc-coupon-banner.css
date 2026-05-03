@@ -1,0 +1,133 @@
+.wt_banner {
+  background: #3389ff;
+  color: #fff;
+  border-radius: 5px;
+  width: 100%;
+  z-index: 1000;
+}
+
+.wt_banner_content {
+  padding:14px 15px;
+  position: relative;
+}
+.coupon-items-container {
+  display: flex;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.wt_banner_title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-right: 20px;
+  color: #f8f8f8;
+}
+
+.banner-description {
+  font-size: 15px;
+  margin-right: 20px;
+  font-weight: normal;
+  color: #fff;
+}
+.banner-coupon-code {
+  padding: 7px 20px;
+  border-radius: 4px;
+  border: solid 1px rgba(255, 255, 255, 0.37);
+  font-weight: bold;
+  font-size: 15px;
+  min-height: 33px;
+  line-height: 33px;
+  margin-left: 20px;
+}
+
+.coupon-banner-items {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  display: flex;
+  width: 100%;
+  min-height: 62px;
+}
+.wt_timer {
+  margin-left: 10px;
+  text-align: center;
+  flex-grow: 1;
+}
+.wt_timer span {
+  border: 1px solid #f3ecec61;
+  margin-right: 4px;
+  font-weight: bold;
+  min-width: 15px;
+  min-height: 22px;
+  line-height: 22px;
+  padding: 7px 5px;
+  border-radius: 3px;
+}
+.wt_timer small {
+  margin-top: 8px;
+}
+.wt_time_details {
+  font-size: 13px;
+}
+.banner-coupon-timer{
+  display: flex;
+  /* margin-top: 9px;
+  padding:4px;
+  font-size: 15px; */
+}
+.wt_time_entry{
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+/* Widget*/
+
+.wt_banner.show_as_widget {
+  float: left;
+  max-width: 100%;
+  width: 358px;
+}
+
+.wt_banner.show_as_widget .coupon-items-container {
+  display: block;
+}
+
+.wt_banner.show_as_widget .coupon-banner-items {
+  display: block;
+  text-align: center;
+}
+
+.wt_banner.show_as_widget .wt_banner_content {
+  padding: 35px;
+  position: relative;
+}
+
+.wt_banner.show_as_widget .coupon-banner-items > div {
+  margin-bottom: 22px;
+}
+
+.wt_banner.show_as_widget .coupon-banner-items > div:last-child {
+  margin-bottom: 0px;
+}
+.wt_dismissable {
+  position: absolute;
+  top: 13px;
+  right: 17px;
+  border-radius: 100%;
+  width: 20px;
+  text-align: center;
+  height: 20px;
+  line-height: 20px;
+  cursor: pointer;
+}
+.show_as_banner .wt_dismissable {
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  color: #f3ecec61;
+}
+.wt_apply_coupon_banner{
+  cursor: pointer;
+}
+
+/* end coupon banner*/

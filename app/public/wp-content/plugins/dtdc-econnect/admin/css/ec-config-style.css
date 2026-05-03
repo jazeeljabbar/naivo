@@ -1,0 +1,41 @@
+.forms-container{
+    margin-top: 12%;
+    margin-bottom: 5%;
+    padding: 0 4em;
+}
+.settings-form{
+    padding: 5%;
+    border-radius: 0 1em 1em 0;
+    box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.2), 0 9px 26px 0 rgba(0, 0, 0, 0.19);
+}
+.settings-form h3{
+    text-align: center;
+    margin-bottom: 1em;
+    color: #333;
+}
+.config-form{
+    padding: 5%;
+    border-radius: 1em 0 0 1em;
+    background: #0062cc;
+    box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.2), 0 9px 26px 0 rgba(0, 0, 0, 0.19);
+}
+.config-form h3{
+    text-align: center;
+    margin-bottom: 1em;
+    color: #fff;
+}
+/*.forms-container form{*/
+/*    padding: 10%;*/
+/*}*/
+
+.settings-form .btnSubmit{
+    font-weight: 600;
+    color: #fff;
+    background-color: #0062cc;
+}
+.config-form .btnSubmit{
+    font-weight: 600;
+    color: #0062cc;
+    background-color: #fff;
+}
+

@@ -1,0 +1,11 @@
+post_title,post_excerpt,post_status,post_date,_wt_sc_shipping_methods,_wt_sc_payment_methods,_wt_category_condition,_wt_product_condition,_wt_free_product_ids,_wt_min_matching_product_qty,_wt_max_matching_product_qty,_wt_min_matching_product_subtotal,_wt_max_matching_product_subtotal,discount_type,coupon_amount,individual_use,product_ids,exclude_product_ids,minimum_amount,maximum_amount,customer_email,usage_limit,limit_usage_to_x_items,usage_limit_per_user,expiry_date,_wt_coupon_start_date,_wt_make_auto_coupon,_wc_make_coupon_available,wt_apply_discount_before_tax_calculation,_wt_need_check_location_in,coupon_category
+WEB-xzTzKroOScByxa9Py3-TOFFEE,,publish,,flat_rate,cod,or,or,,2,,,,percent,10,,"541414, 1415","531313, 1314",1000,,"email1@example.com, email2@example.com",,,,2020-03-29,,,my_account,,billing,Cat A
+WEB-Rd6tJffIsOqIRuOqy6-TOFFEE,,publish,,,cod,or,or,,5,,,,fixed_cart,10,,"541414","1415",,,email3@example.com,,,,,2019-05-28,,"checkout,cart",,billing,Cat A > Cat B > Cat E
+WEB-GYMVdZY2tmM4e7dja5-TOFFEE,,publish,,,cod,or,or,,1,5,,,fixed_product,10,,,,100,,,,,,,,,cart,yes,billing,Cat F > Cat G | Cat C | Cat D
+WEB-a0JCwPlWcOQg1Mv7Sb-TOFFEE,,draft,,flat_rate,cod,or,or,,,2,,,store_credit,10,,,,,,,,,,,,,"my_account,checkout,cart",yes,billing,Cat H | Cat D
+WEB-3WwJH5AaaLMPFbNwU8-TOFFEE,,draft,,,cod,or,or,,,3,,,percent,10,,,,,,,,,,2020-04-29,2020-05-28,,,yes,billing,
+WEB-mbvdzX4bhb14vfOIVV-TOFFEE,,draft,,flat_rate,cod,or,or,,,,,,fixed_cart,10,,,,,,,,,,,,yes,checkout,yes,billing,
+WEB-6YM6pyXPl6KclvhnPJ-TOFFEE,,draft,,flat_rate,cod,or,or,,,1,,,percent,10,,,,,,,,,,,2019-05-28,,,yes,billing,
+WEB-SaooOua95dELKHYp3C-TOFFEE,,private,,,cod,or,or,,2,,,,fixed_cart,10,,,,,,,,,,2022-03-29,,,"checkout,cart",yes,billing,
+WEB-UpjhAvqqb2QhLXeegv-TOFFEE,,private,,flat_rate,cod,or,or,,,,,,store_credit,10,,,,,,,,,,,,,cart,yes,billing,
+WEB-qyOjyKLluJ2Jlg1rCM-TOFFEE,,private,,flat_rate,cod,or,or,,3,,,,fixed_product,10,,,,,,,,,,,,,"my_account,checkout,cart",yes,billing,

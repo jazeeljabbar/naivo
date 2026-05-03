@@ -1,0 +1,17 @@
+== Changelog ==
+
+This file contains changelog.
+
+= 1.0.0 - Nov 1, 2021 =
+* Initial Release
+
+= 1.0.1 - Nov 1, 2021 =
+* Bugs
+    * Bug Fixing
+
+= 1.0.2 - Nov 4, 2021 =
+* Bugs
+    * Bug Fixing
+
+
+

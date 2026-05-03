@@ -1,0 +1,20 @@
+# LocalWP Specific
+app/sql/*.sql
+logs/
+conf/
+
+# WordPress Media and Backups
+app/public/wp-content/uploads/
+app/public/wp-content/updraft/
+app/public/wp-content/wflogs/
+app/public/wp-content/cache/
+
+# Large SQL Files
+*.sql
+
+# macOS
+.DS_Store
+
+# Common IDEs
+.idea/
+.vscode/

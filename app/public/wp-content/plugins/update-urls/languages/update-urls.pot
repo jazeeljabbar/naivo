@@ -1,0 +1,256 @@
+# Copyright (C) 2024 KaizenCoders
+# This file is distributed under the GPL-3.0+.
+msgid ""
+msgstr ""
+"Project-Id-Version: Update URLs 1.2.8\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/update-urls\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-08-22T17:08:56+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.9.0\n"
+"X-Domain: update-urls\n"
+
+#. Plugin Name of the plugin
+#: lite/includes/Admin/Templates/other-products.php:23
+msgid "Update URLs"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://wordpress.org/plugins/update-urls"
+msgstr ""
+
+#. Description of the plugin
+#: lite/includes/Admin/Templates/other-products.php:25
+msgid "Quick and Easy way to search old links and replace them with new links in WordPress"
+msgstr ""
+
+#. Author of the plugin
+msgid "KaizenCoders"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://kaizencoders.com"
+msgstr ""
+
+#: lite/includes/Admin.php:225
+msgid "<span id=\"footer-thankyou\">Thank you for creating with <a href=\"%1$s\" target=\"_blank\">WordPress</a> | %2$s <b>%3$s</b>. Developed by team <a href=\"%4$s\" target=\"_blank\">KaizenCoders</a></span>"
+msgstr ""
+
+#: lite/includes/Admin/Templates/other-products.php:13
+msgid "URL Shortify"
+msgstr ""
+
+#: lite/includes/Admin/Templates/other-products.php:15
+msgid "Simple, Powerful and Easy URL Shortener Plugin For WordPress"
+msgstr ""
+
+#: lite/includes/Admin/Templates/other-products.php:33
+msgid "Utilitify"
+msgstr ""
+
+#: lite/includes/Admin/Templates/other-products.php:35
+msgid "Supercharge Your WordPress Site With Powerpack WordPress Utilities"
+msgstr ""
+
+#: lite/includes/Admin/Templates/other-products.php:75
+msgid "Status"
+msgstr ""
+
+#: lite/includes/Admin/Templates/other-products.php:77
+msgid "Active"
+msgstr ""
+
+#: lite/includes/Admin/Templates/other-products.php:79
+msgid "Inactive"
+msgstr ""
+
+#: lite/includes/Admin/Templates/other-products.php:81
+msgid "Not Installed"
+msgstr ""
+
+#: lite/includes/Admin/Templates/other-products.php:95
+msgid "Buy Now"
+msgstr ""
+
+#: lite/includes/Admin/Templates/other-products.php:98
+msgid "Install"
+msgstr ""
+
+#: lite/includes/Admin/Templates/other-products.php:103
+msgid "Activate"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:5
+msgid "Content"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:6
+msgid "Search in page content (posts, pages, custom post types, revisions)"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:9
+#: lite/includes/Helper.php:566
+msgid "Excerpts"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:10
+msgid "Search in excerpts"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:14
+#: lite/includes/Helper.php:570
+msgid "Attachments"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:15
+msgid "Search in attachments (images, documents, general media)"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:19
+#: lite/includes/Helper.php:574
+msgid "Links"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:20
+msgid "Search in links"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:24
+msgid "Custom"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:25
+msgid "Search in custom fields and meta boxes"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:36
+msgid "Replace GUIDs"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:37
+msgid "Update ALL GUIDs GUIDs for posts should only be changed on development sites. <a href=\"%s\" target=\"_blank\">Learn More</a>."
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:52
+#: lite/includes/Admin/Templates/search-replace.php:59
+#: lite/includes/Admin/Templates/search-replace.php:125
+msgid "ERROR"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:53
+msgid "Please try again."
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:60
+msgid "Your URLs have not been updated."
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:61
+msgid "Please select at least one checkbox."
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:79
+msgid "Why do the results show 0 URLs updated?"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:80
+msgid "This happens if a URL is incorrect OR if it is not found in the content. Check your URLs and try again."
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:95
+msgid "ERROR: Something may have gone wrong."
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:97
+msgid "No search found."
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:106
+msgid "Success! data have been updated."
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:112
+msgid "Results"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:126
+msgid "Your data have not been updated."
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:127
+msgid "Please enter values for both search for and replace with."
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:146
+msgid "WE RECOMMEND THAT YOU BACKUP YOUR WEBSITE."
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:149
+msgid "You may need to restore it if incorrect data are entered in the fields below."
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:157
+#: lite/includes/Admin/Templates/update-urls.php:4
+msgid "Search / Replace"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:166
+msgid "Search For"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:181
+msgid "Replace With"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:198
+msgid "Where to Update?"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:229
+msgid "Additional Settings"
+msgstr ""
+
+#: lite/includes/Admin/Templates/search-replace.php:261
+msgid "Update URLs NOW"
+msgstr ""
+
+#: lite/includes/Admin/Templates/update-urls.php:9
+msgid "Help"
+msgstr ""
+
+#: lite/includes/Admin/Templates/update-urls.php:14
+msgid "Other Awesome Products"
+msgstr ""
+
+#: lite/includes/Helper.php:562
+msgid "Content Items (Posts, Pages, Custom Post Types, Revisions)"
+msgstr ""
+
+#: lite/includes/Helper.php:578
+msgid "Custom Fields"
+msgstr ""
+
+#: lite/includes/Helper.php:582
+msgid "GUIDs"
+msgstr ""
+
+#: lite/includes/Promo.php:70
+msgid "Important Announcement"
+msgstr ""
+
+#: lite/includes/Promo.php:77
+msgid "<p class=\"text-xl\">Buy an annual/lifetime URL Shortify PRO plan at the old price until <b class=\"text-red-600 text-xl\">September 2, 2024</b></p>"
+msgstr ""
+
+#: lite/includes/Promo.php:79
+msgid "Starting September 2, our updated pricing will apply to all our subscription plans... <b><a href=\"%s\" target=\"_blank\">Learn More</a></b>"
+msgstr ""
+
+#. translators: %s: PHP version
+#: update-urls.php:95
+msgid "Update URLs requires PHP version %s+, plugin is currently NOT RUNNING."
+msgstr ""

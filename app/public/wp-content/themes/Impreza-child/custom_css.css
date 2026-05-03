@@ -1,0 +1,17 @@
+.w-cart-dropdown {
+    display: none !important;
+}
+.vi-wcaio-sidebar-cart-icon-wrap{
+	visibility: hidden;
+}
+
+.continue_shopping{
+	display: flex !important;
+    align-items: center !important;
+    color: #151516 !important;
+}
+
+.continue-shopping {
+    bottom: 0 !important;
+    position: absolute !important;
+}
