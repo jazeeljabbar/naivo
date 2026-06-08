@@ -1604,3 +1604,38 @@ function nv_change_checkout_ship_to_bill_text( $translated_text, $text, $domain 
     }
     return $translated_text;
 }
+
+/**
+ * Fix variation names in the cart when WooCommerce falls back to displaying slugs for custom attributes.
+ * Restores the missing '*' in multipack weights (e.g. 2250g -> 2*250G)
+ */
+add_filter( 'woocommerce_get_item_data', 'naivo_fix_cart_variant_names', 10, 2 );
+function naivo_fix_cart_variant_names( $item_data, $cart_item ) {
+    if ( empty( $cart_item['variation_id'] ) ) {
+        return $item_data;
+    }
+    
+    $variation = wc_get_product( $cart_item['variation_id'] );
+    if ( ! $variation ) {
+        return $item_data;
+    }
+
+    foreach ( $item_data as $key => $data ) {
+        $real_attributes = $variation->get_variation_attributes(); 
+        
+        foreach ( $real_attributes as $attr_key => $real_value ) {
+            if ( strpos( $attr_key, 'attribute_pa_' ) === 0 ) {
+                $term = get_term_by( 'slug', $real_value, str_replace( 'attribute_', '', $attr_key ) );
+                if ( $term ) {
+                    $real_value = $term->name;
+                }
+            }
+            
+            if ( sanitize_title( $real_value ) === sanitize_title( $data['value'] ) || $real_value === $data['value'] ) {
+                $item_data[$key]['display'] = $real_value;
+                $item_data[$key]['value']   = $real_value;
+            }
+        }
+    }
+    return $item_data;
+}
