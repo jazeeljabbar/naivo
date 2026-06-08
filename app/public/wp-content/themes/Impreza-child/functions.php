@@ -171,6 +171,29 @@ function naivo_handle_variable_add_to_cart() {
  *   variations: [ { variation_id, attributes: { "attribute_pa_weight": "250g", ... }, price_html, ... } ]
  * }
  */
+/**
+ * Helper: Get original un-sanitized attribute display name for an option slug.
+ */
+function nv_get_attribute_display_name( $product, $attribute_name, $option_slug ) {
+    if ( taxonomy_exists( $attribute_name ) ) {
+        $term = get_term_by( 'slug', $option_slug, $attribute_name );
+        if ( $term ) {
+            return apply_filters( 'woocommerce_variation_option_name', $term->name, $term, $attribute_name, $product );
+        }
+    } else {
+        $product_attributes = $product->get_attributes();
+        if ( isset( $product_attributes[ $attribute_name ] ) ) {
+            $raw_options = $product_attributes[ $attribute_name ]->get_options();
+            foreach ( $raw_options as $raw ) {
+                if ( sanitize_title( $raw ) === $option_slug || $raw === $option_slug ) {
+                    return apply_filters( 'woocommerce_variation_option_name', $raw, null, $attribute_name, $product );
+                }
+            }
+        }
+    }
+    return $option_slug;
+}
+
 add_action( 'wp_ajax_naivo_get_variation_options',        'naivo_get_variation_options' );
 add_action( 'wp_ajax_nopriv_naivo_get_variation_options', 'naivo_get_variation_options' );
 function naivo_get_variation_options() {
@@ -190,9 +213,16 @@ function naivo_get_variation_options() {
     foreach ( $variation_attributes as $attribute_name => $options ) {
         $taxonomy = $attribute_name; // e.g. "pa_weight"
         $label    = wc_attribute_label( $taxonomy, $product );
+        
+        $mapped_options = array();
+        foreach ( $options as $opt ) {
+            $mapped_options[ $opt ] = nv_get_attribute_display_name( $product, $attribute_name, $opt );
+        }
+
         $attrs_data[ $taxonomy ] = array(
-            'label'   => $label,
-            'options' => array_values( $options ),
+            'label'          => $label,
+            'options'        => array_values( $options ),
+            'mapped_options' => $mapped_options,
         );
     }
 
@@ -1472,27 +1502,23 @@ function naivo_quick_view_data() {
     if ( $product->is_type( 'variable' ) ) {
         $variation_attributes = $product->get_variation_attributes();
 
+        // Build filter options cleanly
         foreach ( $variation_attributes as $attribute_name => $options ) {
             $label = wc_attribute_label( $attribute_name, $product );
             if ( stripos( $label, 'weight' ) !== false || $attribute_name === 'pa_weight' ) {
                 foreach ( $options as $opt ) {
-                    $weight_options[] = $opt;
+                    $weight_options[] = array(
+                        'value' => $opt,
+                        'label' => nv_get_attribute_display_name( $product, $attribute_name, $opt )
+                    );
                 }
-            } elseif ( stripos( $label, 'filter' ) !== false || $attribute_name === 'pa_filter' || $attribute_name === 'pa_grind' ) {
-                $filter_options[] = array( 'value' => $opt, 'label' => $opt );
-                // Rebuild properly
-            }
-        }
-
-        // Rebuild filter options cleanly
-        $filter_options = array();
-        foreach ( $variation_attributes as $attribute_name => $options ) {
-            $label = wc_attribute_label( $attribute_name, $product );
-            if ( stripos( $label, 'filter' ) !== false || stripos( $attribute_name, 'filter' ) !== false || stripos( $attribute_name, 'grind' ) !== false ) {
+            } elseif ( stripos( $label, 'filter' ) !== false || stripos( $attribute_name, 'filter' ) !== false || stripos( $attribute_name, 'grind' ) !== false ) {
                 foreach ( $options as $opt ) {
-                    $filter_options[] = array( 'value' => $opt, 'label' => $opt );
+                    $filter_options[] = array( 
+                        'value' => $opt, 
+                        'label' => nv_get_attribute_display_name( $product, $attribute_name, $opt ) 
+                    );
                 }
-                break;
             }
         }
 

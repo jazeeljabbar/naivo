@@ -197,8 +197,11 @@
                         html += '<select class="nv-variation-select" data-taxonomy="attribute_' + taxonomy + '">';
 
                         info.options.forEach(function (opt) {
-                            // Format display: replace hyphens with spaces, capitalize words
+                            // Format display: use mapped option from server if available, else fallback
                             var displayOpt = opt.replace(/-/g, ' ').replace(/\b\w/g, function (l) { return l.toUpperCase(); });
+                            if (info.mapped_options && info.mapped_options[opt]) {
+                                displayOpt = info.mapped_options[opt];
+                            }
                             // Handle URL-encoded or slug values vs display values
                             var selected = '';
                             if (currentVal) {
