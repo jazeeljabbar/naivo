@@ -26,35 +26,101 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ==========================================
-    // MOBILE FILTER/SORT TOGGLE
+    // MOBILE FILTER DRAWER CONTROLS
     // ==========================================
     const mobileFilterBtn = document.getElementById('nv-mobile-filters-btn');
     const mobileSortBtn = document.getElementById('nv-mobile-sort-btn');
     const filterSection = document.getElementById('nv-filter-section');
+    const mobileFilterClose = document.getElementById('nv-mobile-filter-close');
+    const mobileFilterBackdrop = document.getElementById('nv-mobile-filter-backdrop');
+    const applyFiltersBtn = document.getElementById('nv-mobile-filter-apply');
+    const resetFiltersBtn = document.getElementById('nv-mobile-filter-reset');
 
-    if (mobileFilterBtn && filterSection) {
-        mobileFilterBtn.addEventListener('click', () => {
-            filterSection.classList.toggle('nv-mobile-open');
-            document.body.style.overflow = filterSection.classList.contains('nv-mobile-open') ? 'hidden' : '';
-        });
+    function openMobileFilters() {
+        if (filterSection) {
+            filterSection.classList.add('nv-mobile-open');
+            if (mobileFilterBackdrop) {
+                mobileFilterBackdrop.classList.add('active');
+            }
+            document.body.classList.add('nv-filter-active');
+        }
+    }
+
+    function closeMobileFilters() {
+        if (filterSection) {
+            filterSection.classList.remove('nv-mobile-open');
+            if (mobileFilterBackdrop) {
+                mobileFilterBackdrop.classList.remove('active');
+            }
+            document.body.classList.remove('nv-filter-active');
+        }
+    }
+
+    if (mobileFilterBtn) {
+        mobileFilterBtn.addEventListener('click', openMobileFilters);
+    }
+
+    if (mobileFilterClose) {
+        mobileFilterClose.addEventListener('click', closeMobileFilters);
+    }
+
+    if (mobileFilterBackdrop) {
+        mobileFilterBackdrop.addEventListener('click', closeMobileFilters);
     }
 
     if (mobileSortBtn) {
         mobileSortBtn.addEventListener('click', () => {
-            // On mobile, open the sort dropdown directly
             const sortDropdown = document.querySelector('.nv-sort-dropdown');
             if (sortDropdown) {
-                // If filter section is visible, toggle the sort dropdown in it
-                if (filterSection && !filterSection.classList.contains('nv-mobile-open')) {
-                    filterSection.classList.add('nv-mobile-open');
-                    document.body.style.overflow = 'hidden';
-                }
-                // Auto-open the sort dropdown
+                openMobileFilters();
+                // Close other dropdowns first, then open sort
+                dropdowns.forEach(d => { if(d !== sortDropdown) d.classList.remove('open'); });
                 setTimeout(() => {
                     sortDropdown.classList.add('open');
-                }, 100);
+                }, 200);
             }
         });
+    }
+
+    // Apply Filters button click
+    if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', () => {
+            updatePills();
+            triggerAJAX();
+            closeMobileFilters();
+        });
+    }
+
+    // Reset Filters button click
+    if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', () => {
+            const checkboxes = document.querySelectorAll('.nv-dropdown-menu input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = false);
+            updateStateFromDOM();
+            updateBadges();
+            updateMobileFilterCount();
+            updatePills();
+            triggerAJAX();
+            closeMobileFilters();
+        });
+    }
+
+    // Swipe to Close gesture
+    if (filterSection) {
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        filterSection.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        filterSection.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            // If swiped right by more than 80px (towards right edge)
+            if (touchEndX - touchStartX > 80) {
+                closeMobileFilters();
+            }
+        }, { passive: true });
     }
 
     // ==========================================
@@ -108,8 +174,12 @@ document.addEventListener('DOMContentLoaded', function() {
             updateStateFromDOM();
             updateBadges();
             updateMobileFilterCount();
-            updatePills();
-            triggerAJAX();
+            
+            // Only update pills and trigger AJAX immediately on desktop screen widths
+            if (window.innerWidth > 768) {
+                updatePills();
+                triggerAJAX();
+            }
         });
     });
 
@@ -305,4 +375,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
         }, 200); 
     }
+
+    // Mobile tap details toggle (Event Delegation)
+    document.addEventListener('click', (e) => {
+        const toggleBtn = e.target.closest('.nv-mobile-details-toggle');
+        if (toggleBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const card = toggleBtn.closest('.nv-product-card');
+            if (card) {
+                card.classList.toggle('nv-show-details');
+                
+                const infoIcon = toggleBtn.querySelector('.nv-info-icon');
+                const closeIcon = toggleBtn.querySelector('.nv-close-icon');
+                if (infoIcon && closeIcon) {
+                    if (card.classList.contains('nv-show-details')) {
+                        infoIcon.style.display = 'none';
+                        closeIcon.style.display = 'block';
+                    } else {
+                        infoIcon.style.display = 'block';
+                        closeIcon.style.display = 'none';
+                    }
+                }
+            }
+        }
+    });
 });

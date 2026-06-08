@@ -118,21 +118,29 @@ function naivo_handle_variable_add_to_cart() {
 
     $quantity = empty( $_POST['quantity'] ) ? 1 : wc_stock_amount( wp_unslash( $_POST['quantity'] ) );
 
-    // Build variation attributes from POST data
+    // 1. First gather attributes from the variation object (baseline)
+    // We trust the variation object's attributes as the absolute source of truth
+    // because third-party cart plugins often cache form data and send stale POST payloads.
     $variation = array();
-    foreach ( $_POST as $key => $value ) {
-        if ( strpos( $key, 'attribute_' ) === 0 ) {
-            $variation[ sanitize_title( $key ) ] = sanitize_text_field( $value );
+    $variation_obj = wc_get_product( $variation_id );
+    if ( $variation_obj ) {
+        foreach ( $variation_obj->get_variation_attributes() as $attr_key => $attr_val ) {
+            $variation[ 'attribute_' . sanitize_title( $attr_key ) ] = sanitize_text_field( $attr_val );
         }
     }
 
-    // If no attributes were passed, get them from the variation object
-    if ( empty( $variation ) ) {
-        $variation_obj = wc_get_product( $variation_id );
-        if ( $variation_obj ) {
-            $variation = $variation_obj->get_variation_attributes();
+    // 2. FALLBACK to POST data ONLY for "Any [Attribute]" variations.
+    // If the variation object returned an empty string for an attribute, we must use the POST data.
+    foreach ( $_POST as $key => $value ) {
+        if ( strpos( $key, 'attribute_' ) === 0 && !empty($value) ) {
+            $clean_key = sanitize_title( $key );
+            // Only use POST data if the variation object didn't provide a specific value
+            if ( empty( $variation[ $clean_key ] ) ) {
+                $variation[ $clean_key ] = sanitize_text_field( $value );
+            }
         }
     }
+
 
     $passed_validation = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity, $variation_id, $variation );
     $product_status    = get_post_status( $product_id );
@@ -539,6 +547,177 @@ function enqueue_custom_woocommerce_styles() {
 }
 add_action( 'wp_enqueue_scripts', 'enqueue_custom_woocommerce_styles', 20 );
 
+function naivo_home_hero_fit_width_css() {
+    if ( ! is_front_page() && ! is_home() ) {
+        return;
+    }
+    $hero_image_url = get_stylesheet_directory_uri() . '/images/Banner-03.png';
+    ?>
+	    <style id="naivo-home-hero-fit-width">
+            .home .l-main > section[id="For-Desktop"],
+            .home .l-main > section[id="For-Mobile"] {
+                position: relative;
+            }
+            .home .l-main > section[id="For-Desktop"] .n2-ss-slide-background-image,
+            .home .l-main > section[id="For-Mobile"] .n2-ss-slide-background-image {
+                background-image: url('<?php echo esc_url( $hero_image_url ); ?>') !important;
+                background-size: 100% auto !important;
+                background-position: top center !important;
+                background-repeat: no-repeat !important;
+            }
+            .home .l-main > section[id="For-Desktop"] .n2-ss-slide-background-image picture,
+            .home .l-main > section[id="For-Mobile"] .n2-ss-slide-background-image picture,
+            .home .l-main > section[id="For-Desktop"] .n2-ss-slide-background-image img,
+            .home .l-main > section[id="For-Mobile"] .n2-ss-slide-background-image img,
+            .home .l-main > section[id="For-Desktop"] .n2-ss-slide-thumbnail,
+            .home .l-main > section[id="For-Mobile"] .n2-ss-slide-thumbnail {
+                opacity: 0 !important;
+                visibility: hidden !important;
+	        }
+            .home .nv-home-hero-overlay {
+                position: absolute;
+                z-index: 6;
+                top: 50%;
+                left: clamp(24px, 7vw, 96px);
+                transform: translateY(-50%);
+                max-width: 390px;
+                pointer-events: auto;
+            }
+            .home .nv-home-hero-overlay h1 {
+                margin: 0 0 16px;
+                color: #1f1a16;
+                font-size: clamp(38px, 4.8vw, 68px);
+                line-height: 1.05;
+                font-weight: 800;
+                letter-spacing: 0;
+            }
+            .home .nv-home-hero-overlay p {
+                margin: 0 0 28px;
+                color: #3d332b;
+                font-size: clamp(18px, 1.8vw, 24px);
+                line-height: 1.35;
+                font-weight: 500;
+            }
+            .home .nv-home-hero-overlay .nv-home-hero-button {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 48px;
+                padding: 0 30px;
+                border-radius: 0;
+                background: #1f1a16;
+                color: #fff !important;
+                font-size: 13px;
+                line-height: 1;
+                font-weight: 800;
+                letter-spacing: 1.2px;
+                text-decoration: none !important;
+                text-transform: uppercase;
+            }
+            .home .nv-home-hero-overlay .nv-home-hero-button:hover {
+                background: #3b3129;
+            }
+            @media (max-width: 767px) {
+                /* ── Give the mobile hero section meaningful height ── */
+                .home .l-main > section[id="For-Mobile"] {
+                    min-height: 88vw !important;
+                }
+                /* ── Switch to cover so image fills the section height ── */
+                .home .l-main > section[id="For-Mobile"] .n2-ss-slide-background-image {
+                    background-size: cover !important;
+                    background-position: left center !important;
+                }
+                /* ── Force Smart Slider inner to respect the min-height ── */
+                .home .l-main > section[id="For-Mobile"] .n2-ss-align,
+                .home .l-main > section[id="For-Mobile"] .n2-padding,
+                .home .l-main > section[id="For-Mobile"] .n2-ss-slider,
+                .home .l-main > section[id="For-Mobile"] .n2-ss-slider-wrapper,
+                .home .l-main > section[id="For-Mobile"] .n2-ss-section-main-content {
+                    min-height: 88vw !important;
+                }
+                /* ── Overlay: bottom-anchored, left-aligned, full-width ── */
+                .home .nv-home-hero-overlay {
+                    top: auto !important;
+                    bottom: 0 !important;
+                    left: 0 !important;
+                    right: 0 !important;
+                    transform: none !important;
+                    max-width: 100% !important;
+                    padding: 20px 20px 24px;
+                    background: linear-gradient(to top, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.6) 70%, rgba(255,255,255,0) 100%);
+                }
+                .home .nv-home-hero-overlay h1 {
+                    margin-bottom: 6px;
+                    font-size: clamp(26px, 7.5vw, 34px);
+                    line-height: 1.1;
+                }
+                .home .nv-home-hero-overlay p {
+                    margin-bottom: 14px;
+                    font-size: clamp(13px, 3.8vw, 16px);
+                    line-height: 1.4;
+                }
+                .home .nv-home-hero-overlay .nv-home-hero-button {
+                    min-height: 48px;
+                    padding: 0 28px;
+                    font-size: 12px;
+                    letter-spacing: 1.5px;
+                }
+                /* ── Reduce excessive space below hero on mobile ── */
+                .home .l-main > section[id="For-Mobile"] + section {
+                    padding-top: 24px !important;
+                }
+            }
+            @media (max-width: 400px) {
+                .home .l-main > section[id="For-Mobile"] {
+                    min-height: 95vw !important;
+                }
+                .home .l-main > section[id="For-Mobile"] .n2-ss-align,
+                .home .l-main > section[id="For-Mobile"] .n2-padding,
+                .home .l-main > section[id="For-Mobile"] .n2-ss-slider,
+                .home .l-main > section[id="For-Mobile"] .n2-ss-slider-wrapper,
+                .home .l-main > section[id="For-Mobile"] .n2-ss-section-main-content {
+                    min-height: 95vw !important;
+                }
+                .home .nv-home-hero-overlay h1 {
+                    font-size: 26px;
+                }
+                .home .nv-home-hero-overlay p {
+                    font-size: 13px;
+                }
+            }
+	    </style>
+	    <?php
+	}
+	add_action( 'wp_head', 'naivo_home_hero_fit_width_css', 99 );
+
+function naivo_home_hero_overlay_markup() {
+    if ( ! is_front_page() && ! is_home() ) {
+        return;
+    }
+    ?>
+    <script id="naivo-home-hero-overlay-js">
+        document.addEventListener('DOMContentLoaded', function() {
+            var heroSections = document.querySelectorAll('.home .l-main > section[id="For-Desktop"], .home .l-main > section[id="For-Mobile"]');
+            heroSections.forEach(function(section) {
+                if (!section.querySelector('.n2-section-smartslider') || section.querySelector('.nv-home-hero-overlay')) {
+                    return;
+                }
+
+                var overlay = document.createElement('div');
+                overlay.className = 'nv-home-hero-overlay';
+                overlay.innerHTML = '<h1>We&rsquo;ve Got Stories to Tell</h1><p>...but our coffees do the talking</p><a class="nv-home-hero-button" href="<?php echo esc_url( home_url( '/shop/' ) ); ?>">Shop Now</a>';
+                section.appendChild(overlay);
+
+                section.querySelectorAll('.n2-ss-slide[data-haslink="1"]').forEach(function(slide) {
+                    slide.setAttribute('data-href', '<?php echo esc_js( home_url( '/shop/' ) ); ?>');
+                });
+            });
+        });
+    </script>
+    <?php
+}
+add_action( 'wp_footer', 'naivo_home_hero_overlay_markup', 99 );
+
 add_action("wp_head","add_js_call");
 function add_js_call(){
     ?>
@@ -647,21 +826,40 @@ function change_existing_currency_symbol( $currency_symbol, $currency ) {
 add_filter( 'woocommerce_get_price_html', 'change_variable_products_price_display', 10, 2 );
 function change_variable_products_price_display( $price, $product ) {
 
-    // Only for variable products type
-    if( ! $product->is_type('variable') ) return $price;
+    // Only apply to variable products
+    if ( ! $product->is_type('variable') ) {
+        return $price;
+    }
+
+    // Do not alter in admin, cart, or checkout pages
+    if ( is_admin() || is_cart() || is_checkout() || ( function_exists('is_wc_endpoint_url') && ( is_wc_endpoint_url('order-pay') || is_wc_endpoint_url('order-received') ) ) ) {
+        return $price;
+    }
+
+    // Prevent duplicate prefix
+    if ( strpos( $price, 'fromprice' ) !== false ) {
+        return $price;
+    }
 
     $prices = $product->get_variation_prices( true );
 
-    if ( empty( $prices['price'] ) )
+    if ( empty( $prices['price'] ) ) {
         return apply_filters( 'woocommerce_variable_empty_price_html', '', $product );
+    }
 
-    $min_price = current( $prices['price'] );
-    $max_price = end( $prices['price'] );
-    $prefix_html = '<span class="price-prefix fromprice">' . __('from  ') . '</span>';
+    $min_price     = current( $prices['price'] );
+    $min_reg_price = current( $prices['regular_price'] );
 
-    $prefix = $min_price !== $max_price ? $prefix_html : ''; // HERE the prefix
+    // Determine if the minimum priced variation is on sale
+    if ( $min_price !== $min_reg_price ) {
+        $formatted_price = wc_format_sale_price( wc_price( $min_reg_price ), wc_price( $min_price ) );
+    } else {
+        $formatted_price = wc_price( $min_price );
+    }
 
-    return apply_filters( 'woocommerce_variable_price_html', $prefix . wc_price( $min_price ) . $product->get_price_suffix(), $product );
+    // Add "from" prefix with styled spans matching Naivo design
+    $from_prefix = '<span class="price-from fromprice">from</span> ';
+    return apply_filters( 'woocommerce_variable_price_html', $from_prefix . $formatted_price . $product->get_price_suffix(), $product );
 }
 
 
@@ -802,6 +1000,9 @@ function enqueue_custom_shop_assets() {
         wp_enqueue_script( 'custom-shop-js', get_stylesheet_directory_uri() . '/js/shop-filter.js', array('jquery'), $ver, true );
         wp_localize_script( 'custom-shop-js', 'shop_ajax', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
     }
+
+    // Enqueue PDP-specific JS globally so Quick View modal can use it on shop pages
+    wp_enqueue_script( 'naivo-pdp-js', get_stylesheet_directory_uri() . '/js/pdp.js', array('jquery'), $ver, true );
 }
 add_action( 'wp_enqueue_scripts', 'enqueue_custom_shop_assets', 100 );
 
@@ -926,9 +1127,9 @@ function naivo_single_product_pills_and_notes() {
     }
 
     if ($subtitle) {
-        echo '<div style="margin-bottom: 12px; margin-top: 15px;">';
-        echo '<div style="font-size:11px; font-weight:bold; letter-spacing:1px; margin-bottom:4px; text-transform:uppercase; color:#000;">FLAVOUR NOTES</div>';
-        echo '<div style="font-size:11px; color:#555; text-transform:uppercase; margin-bottom:0;">' . esc_html($subtitle) . '</div>';
+        echo '<div class="nv-flavor-notes-wrap">';
+        echo '<div class="nv-flavor-notes-title">FLAVOUR NOTES</div>';
+        echo '<div class="nv-flavor-notes-content">' . esc_html($subtitle) . '</div>';
         echo '</div>';
     }
 
@@ -942,15 +1143,15 @@ function naivo_single_product_pills_and_notes() {
 
     $profile_slug = sanitize_title($profile_text);
     $flavour_icons = array(
-        'bright-fruity' => array('icon' => 'https://naivo.in/wp-content/uploads/2024/08/blue-berry-icon.svg', 'bg' => '#eef2ff', 'color' => '#3b5998'),
-        'rich-strong' => array('icon' => 'https://naivo.in/wp-content/uploads/2024/08/rich-icon.svg', 'bg' => '#f4eee8', 'color' => '#8b5a2b'),
-        'bold-balanced' => array('icon' => 'https://naivo.in/wp-content/uploads/2024/08/bold-icon.svg', 'bg' => '#f4eee8', 'color' => '#8b5a2b'),
-        'sweet-juicy' => array('icon' => 'https://naivo.in/wp-content/uploads/2024/08/orange-icon.svg', 'bg' => '#fff0e6', 'color' => '#e65c00'),
-        'delicate-floral' => array('icon' => 'https://naivo.in/wp-content/uploads/2024/08/floral-icon.svg', 'bg' => '#f3e8ff', 'color' => '#7e22ce'),
+        'bright-fruity' => array('icon' => '/wp-content/uploads/2024/08/blue-berry-icon.svg', 'bg' => '#eef2ff', 'color' => '#3b5998'),
+        'rich-strong' => array('icon' => '/wp-content/uploads/2024/08/rich-icon.svg', 'bg' => '#f4eee8', 'color' => '#8b5a2b'),
+        'bold-balanced' => array('icon' => '/wp-content/uploads/2024/08/bold-icon.svg', 'bg' => '#f4eee8', 'color' => '#8b5a2b'),
+        'sweet-juicy' => array('icon' => '/wp-content/uploads/2024/08/orange-icon.svg', 'bg' => '#fff0e6', 'color' => '#e65c00'),
+        'delicate-floral' => array('icon' => '/wp-content/uploads/2024/08/floral-icon.svg', 'bg' => '#f3e8ff', 'color' => '#7e22ce'),
     );
 
     if ( $profile_text || $roast_text || $country_text ) {
-        echo '<div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom: 25px;">';
+        echo '<div class="nv-product-pills">';
         
         if ( $profile_text ) {
              $icon_html = '';
@@ -958,19 +1159,19 @@ function naivo_single_product_pills_and_notes() {
              $profile_color = '#3b5998';
              foreach ($flavour_icons as $slug_key => $data) {
                  if (strpos($profile_slug, $slug_key) !== false) {
-                     $icon_html = '<img src="' . esc_url($data['icon']) . '" alt="icon" style="width:16px; height:16px; margin:0;" />';
+                     $icon_html = '<img src="' . esc_url($data['icon']) . '" alt="icon" class="nv-pill-icon" />';
                      $profile_bg = $data['bg'];
                      $profile_color = $data['color'];
                      break;
                  }
              }
-             echo '<span style="background: ' . esc_attr($profile_bg) . '; color: ' . esc_attr($profile_color) . '; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 6px;">' . $icon_html . ' ' . esc_html($profile_text) . '</span>';
+             echo '<span class="nv-pill nv-pill-profile" style="background: ' . esc_attr($profile_bg) . '; color: ' . esc_attr($profile_color) . ';">' . $icon_html . ' ' . esc_html($profile_text) . '</span>';
         }
         if ( $roast_text ) {
-             echo '<span style="background: #f4eee8; color: #8b5a2b; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 6px;">☕ ' . esc_html($roast_text) . '</span>';
+             echo '<span class="nv-pill nv-pill-roast">☕ ' . esc_html($roast_text) . '</span>';
         }
         if ( $country_text ) {
-             echo '<span style="background: #e8ecee; color: #2b6271; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 6px;">📍 ' . esc_html($country_text) . '</span>';
+             echo '<span class="nv-pill nv-pill-country">📍 ' . esc_html($country_text) . '</span>';
         }
         echo '</div>';
     }
@@ -1070,4 +1271,336 @@ add_action( 'woocommerce_review_order_before_order_total', function() {
     }
 });
 
+/**
+ * Rename variation labels for premium look
+ */
+add_filter( 'woocommerce_attribute_label', 'naivo_rename_pdp_labels', 10, 3 );
+function naivo_rename_pdp_labels( $label, $name, $product ) {
+    if ( is_product() ) {
+        if ( $name === 'pa_filter' || $name === 'pa_grind-size' || $name === 'Grind Size' || strpos(strtolower($label), 'grind size') !== false || strpos(strtolower($label), 'filter') !== false ) {
+            return 'SELECT GRIND SIZE'; // Keep it clean here, JS will add the icon
+        }
+        if ( $name === 'pa_weight' || $name === 'Weight' || strpos(strtolower($label), 'weight') !== false ) {
+            return 'WEIGHT';
+        }
+    }
+    return $label;
+}
 
+/**
+ * Add "Buy Now" button next to "Add to Cart"
+ */
+add_action( 'woocommerce_after_add_to_cart_button', 'naivo_add_buy_now_button' );
+function naivo_add_buy_now_button() {
+    echo '<button type="submit" name="naivo_buy_now" value="1" class="button nv-buy-now-btn">BUY NOW</button>';
+}
+
+/**
+ * Handle "Buy Now" redirect to checkout
+ */
+add_filter( 'woocommerce_add_to_cart_redirect', 'naivo_buy_now_redirect' );
+function naivo_buy_now_redirect( $url ) {
+    if ( isset( $_REQUEST['naivo_buy_now'] ) ) {
+        return wc_get_checkout_url();
+    }
+    return $url;
+}
+
+/**
+ * Inject Sticky CTA Bar and WhatsApp Icon in Footer
+ */
+add_action( 'wp_footer', 'naivo_inject_sticky_elements' );
+function naivo_inject_sticky_elements() {
+    if ( is_product() ) {
+        global $product;
+        if ( ! $product ) return;
+
+        $thumb = get_the_post_thumbnail_url( $product->get_id(), 'thumbnail' );
+        $title = $product->get_name();
+        $price = $product->get_price_html();
+        ?>
+        <!-- Sticky CTA Bar -->
+        <div id="nv-sticky-cta-bar" class="nv-sticky-bar">
+            <div class="nv-sticky-bar-container">
+                <div class="nv-sticky-info">
+                    <img src="<?php echo esc_url( $thumb ); ?>" alt="Product Thumb">
+                    <div class="nv-sticky-text">
+                        <div class="nv-sticky-title"><?php echo esc_html( $title ); ?></div>
+                        <div class="nv-sticky-price"><?php echo $price; ?></div>
+                    </div>
+                </div>
+                <div class="nv-sticky-actions">
+                    <button class="nv-sticky-buy-btn" onclick="document.querySelector('.single_add_to_cart_button').click();">ADD TO CART</button>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+    ?>
+        <!-- Sticky WhatsApp -->
+        <a href="https://wa.me/919686365058" class="nv-sticky-whatsapp" target="_blank" rel="nofollow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#fff"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.316 1.592 5.43 0 9.856-4.426 9.858-9.855.002-5.43-4.425-9.856-9.855-9.856-5.431 0-9.856 4.426-9.858 9.855 0 2.046.611 3.654 1.611 5.326l-1.017 3.71 3.845-.972zm11.366-7.06c-.349-.174-2.065-1.02-2.387-1.137-.322-.117-.557-.174-.79.174-.234.348-.905 1.137-1.11 1.369-.205.232-.41.261-.758.087-.348-.174-1.472-.542-2.803-1.728-1.035-.923-1.733-2.062-1.937-2.41-.205-.348-.022-.537.152-.711.156-.156.348-.406.522-.609.174-.203.232-.348.348-.58.116-.232.058-.435-.03-.609-.087-.174-.79-1.902-1.082-2.603-.284-.682-.572-.59-.79-.601-.204-.01-.439-.012-.673-.012s-.614.088-.936.435c-.322.348-1.23 1.203-1.23 2.93s1.258 3.393 1.434 3.625c.176.232 2.476 3.782 5.998 5.304.838.362 1.492.578 2.003.74.841.268 1.607.23 2.212.14.675-.102 2.065-.844 2.357-1.657.292-.812.292-1.508.205-1.656-.087-.148-.322-.232-.67-.406z"/></svg>
+        </a>
+    <script>
+        jQuery(document).ready(function($) {
+            if ($('#nv-sticky-cta-bar').length) {
+                var cartBtn = $('.single_add_to_cart_button');
+                if (cartBtn.length) {
+                    $(window).scroll(function() {
+                        if ($(window).scrollTop() > cartBtn.offset().top + 100) {
+                            $('#nv-sticky-cta-bar').addClass('visible');
+                        } else {
+                            $('#nv-sticky-cta-bar').removeClass('visible');
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+    <?php
+}
+
+
+
+
+
+
+/**
+ * Move Quantity above Add to Cart buttons
+ */
+remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
+add_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 35 );
+
+/**
+ * AJAX: Quick View product data
+ * Returns structured JSON for the Figma quick-view modal.
+ * Request: POST { product_id }
+ */
+add_action( 'wp_ajax_naivo_quick_view_data',        'naivo_quick_view_data' );
+add_action( 'wp_ajax_nopriv_naivo_quick_view_data', 'naivo_quick_view_data' );
+function naivo_quick_view_data() {
+    $product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
+    if ( ! $product_id && ! empty( $_POST['product_slug'] ) ) {
+        $slug = sanitize_text_field( $_POST['product_slug'] );
+        $posts = get_posts( array(
+            'name'           => $slug,
+            'post_type'      => 'product',
+            'fields'         => 'ids',
+            'posts_per_page' => 1
+        ) );
+        if ( ! empty( $posts ) ) {
+            $product_id = $posts[0];
+        }
+    }
+    if ( ! $product_id ) {
+        wp_send_json_error( 'Missing product_id' );
+    }
+
+    $product = wc_get_product( $product_id );
+    if ( ! $product || ! $product->is_visible() ) {
+        wp_send_json_error( 'Product not found' );
+    }
+
+    // ── Gallery images ──────────────────────────────────────
+    $gallery_ids     = $product->get_gallery_image_ids();
+    $featured_id     = $product->get_image_id();
+    $all_image_ids   = array_merge( array( $featured_id ), $gallery_ids );
+    $gallery_images  = array();
+    foreach ( $all_image_ids as $img_id ) {
+        if ( ! $img_id ) continue;
+        $src = wp_get_attachment_image_src( $img_id, 'woocommerce_single' );
+        if ( $src ) {
+            $gallery_images[] = array(
+                'url' => $src[0],
+                'alt' => get_post_meta( $img_id, '_wp_attachment_image_alt', true ),
+            );
+        }
+    }
+
+    // ── Flavour notes ────────────────────────────────────────
+    $flavor_notes = get_field( 'flavor_notes', $product_id );
+    if ( empty( $flavor_notes ) ) {
+        $tags = get_the_terms( $product_id, 'product_tag' );
+        if ( ! empty( $tags ) && ! is_wp_error( $tags ) ) {
+            $tag_names   = wp_list_pluck( $tags, 'name' );
+            $flavor_notes = implode( ', ', $tag_names );
+        }
+    }
+
+    // ── Attribute pills ──────────────────────────────────────
+    $roasts         = get_the_terms( $product_id, 'pa_roast' );
+    $countries      = get_the_terms( $product_id, 'pa_country' );
+    $flavour_profile = get_the_terms( $product_id, 'pa_flavour-profile' );
+
+    $roast_text   = ( ! empty( $roasts )   && ! is_wp_error( $roasts ) )   ? $roasts[0]->name   : '';
+    $country_text = ( ! empty( $countries ) && ! is_wp_error( $countries ) ) ? $countries[0]->name : '';
+    $profile_text = ( ! empty( $flavour_profile ) && ! is_wp_error( $flavour_profile ) ) ? $flavour_profile[0]->name : '';
+    $profile_slug = sanitize_title( $profile_text );
+
+    $flavour_icons = array(
+        'bright-fruity'    => array( 'icon' => 'https://naivo.in/wp-content/uploads/2024/08/blue-berry-icon.svg',  'bg' => '#eef2ff', 'color' => '#3b5998' ),
+        'rich-strong'      => array( 'icon' => 'https://naivo.in/wp-content/uploads/2024/08/rich-icon.svg',        'bg' => '#f4eee8', 'color' => '#8b5a2b' ),
+        'bold-balanced'    => array( 'icon' => 'https://naivo.in/wp-content/uploads/2024/08/bold-icon.svg',        'bg' => '#f4eee8', 'color' => '#8b5a2b' ),
+        'sweet-juicy'      => array( 'icon' => 'https://naivo.in/wp-content/uploads/2024/08/orange-icon.svg',      'bg' => '#fff0e6', 'color' => '#e65c00' ),
+        'delicate-floral'  => array( 'icon' => 'https://naivo.in/wp-content/uploads/2024/08/floral-icon.svg',      'bg' => '#f3e8ff', 'color' => '#7e22ce' ),
+    );
+
+    $profile_icon  = '';
+    $profile_bg    = '#f0f4ff';
+    $profile_color = '#3b5998';
+    foreach ( $flavour_icons as $slug_key => $data ) {
+        if ( strpos( $profile_slug, $slug_key ) !== false ) {
+            $profile_icon  = $data['icon'];
+            $profile_bg    = $data['bg'];
+            $profile_color = $data['color'];
+            break;
+        }
+    }
+
+    // ── Price ────────────────────────────────────────────────
+    if ( $product->is_type( 'variable' ) ) {
+        $price_html = '<span class="price-from fromprice">from</span> ' . wc_price( $product->get_variation_price( 'min', true ) );
+    } else {
+        $price_html = wc_price( wc_get_price_to_display( $product ) );
+    }
+
+    // ── Variations (weight + filter) ─────────────────────────
+    $weight_options = array();
+    $filter_options = array();
+    $variations_map = array(); // variation_id => attributes
+
+    if ( $product->is_type( 'variable' ) ) {
+        $variation_attributes = $product->get_variation_attributes();
+
+        foreach ( $variation_attributes as $attribute_name => $options ) {
+            $label = wc_attribute_label( $attribute_name, $product );
+            if ( stripos( $label, 'weight' ) !== false || $attribute_name === 'pa_weight' ) {
+                foreach ( $options as $opt ) {
+                    $weight_options[] = $opt;
+                }
+            } elseif ( stripos( $label, 'filter' ) !== false || $attribute_name === 'pa_filter' || $attribute_name === 'pa_grind' ) {
+                $filter_options[] = array( 'value' => $opt, 'label' => $opt );
+                // Rebuild properly
+            }
+        }
+
+        // Rebuild filter options cleanly
+        $filter_options = array();
+        foreach ( $variation_attributes as $attribute_name => $options ) {
+            $label = wc_attribute_label( $attribute_name, $product );
+            if ( stripos( $label, 'filter' ) !== false || stripos( $attribute_name, 'filter' ) !== false || stripos( $attribute_name, 'grind' ) !== false ) {
+                foreach ( $options as $opt ) {
+                    $filter_options[] = array( 'value' => $opt, 'label' => $opt );
+                }
+                break;
+            }
+        }
+
+        // Build variations map for price lookup
+        $available_variations = $product->get_available_variations();
+        foreach ( $available_variations as $v ) {
+            $variations_map[] = array(
+                'variation_id'  => $v['variation_id'],
+                'attributes'    => $v['attributes'],
+                'display_price' => $v['display_price'],
+                'price_html'    => $v['price_html'],
+                'is_in_stock'   => $v['is_in_stock'],
+            );
+        }
+
+        // Default variation
+        $default_attrs = $product->get_default_attributes();
+        if ( ! empty( $default_attrs ) ) {
+            $ds     = WC_Data_Store::load( 'product' );
+            $def_id = $ds->find_matching_product_variation( $product, $default_attrs );
+        } else {
+            $def_id = 0;
+            foreach ( $available_variations as $v ) {
+                if ( $v['is_in_stock'] ) { $def_id = $v['variation_id']; break; }
+            }
+        }
+    } else {
+        $def_id = 0;
+    }
+
+    // ── Permalink ─────────────────────────────────────────────
+    $permalink = get_permalink( $product_id );
+
+    // ── Response ──────────────────────────────────────────────
+    wp_send_json_success( array(
+        'product_id'         => $product_id,
+        'product_type'       => $product->get_type(),
+        'name'               => $product->get_name(),
+        'price_html'         => $price_html,
+        'flavor_notes'       => $flavor_notes,
+        'gallery'            => $gallery_images,
+        'profile_text'       => $profile_text,
+        'profile_icon'       => $profile_icon,
+        'profile_bg'         => $profile_bg,
+        'profile_color'      => $profile_color,
+        'roast_text'         => $roast_text,
+        'country_text'       => $country_text,
+        'weight_options'     => array_values( array_unique( $weight_options ) ),
+        'filter_options'     => $filter_options,
+        'variations_map'     => $variations_map,
+        'default_variation'  => $def_id,
+        'permalink'          => $permalink,
+        'ajax_url'           => admin_url( 'admin-ajax.php' ),
+        'nonce'              => wp_create_nonce( 'wc-add-to-cart' ),
+    ) );
+}
+
+/**
+ * Update checkout address country field layout
+ * Restrict all countries to India only to completely remove any dropdowns
+ */
+add_filter( 'woocommerce_countries', 'nv_restrict_shipping_country', 9999 );
+add_filter( 'woocommerce_shipping_countries', 'nv_restrict_shipping_country', 9999 );
+add_filter( 'woocommerce_countries_allowed_countries', 'nv_restrict_shipping_country', 9999 );
+function nv_restrict_shipping_country( $countries ) {
+    return array( 'IN' => 'India' );
+}
+
+add_filter( 'woocommerce_checkout_fields', 'nv_force_checkout_country_fields', 9999 );
+function nv_force_checkout_country_fields( $fields ) {
+    // Force billing country
+    if ( isset( $fields['billing']['billing_country'] ) ) {
+        $fields['billing']['billing_country']['priority'] = 95;
+    }
+    // Force shipping country
+    if ( isset( $fields['shipping']['shipping_country'] ) ) {
+        $fields['shipping']['shipping_country']['priority'] = 95;
+    }
+    return $fields;
+}
+
+/**
+ * Remove priority override from WooCommerce locale for India
+ */
+add_filter( 'woocommerce_get_country_locale_default', 'nv_remove_locale_country_priority', 9999 );
+add_filter( 'woocommerce_get_country_locale', 'nv_remove_locale_country_priority_all', 9999 );
+
+function nv_remove_locale_country_priority( $locale ) {
+    if ( isset( $locale['country']['priority'] ) ) {
+        unset( $locale['country']['priority'] );
+    }
+    return $locale;
+}
+
+function nv_remove_locale_country_priority_all( $locales ) {
+    if ( isset( $locales['IN']['country']['priority'] ) ) {
+        unset( $locales['IN']['country']['priority'] );
+    }
+    return $locales;
+}
+
+/**
+ * Change checkout toggle text
+ */
+add_filter( 'gettext', 'nv_change_checkout_ship_to_bill_text', 10, 3 );
+function nv_change_checkout_ship_to_bill_text( $translated_text, $text, $domain ) {
+    if ( $domain === 'woocommerce' && $text === 'Ship to a different address?' ) {
+        $translated_text = 'Bill to a different address?';
+    }
+    return $translated_text;
+}

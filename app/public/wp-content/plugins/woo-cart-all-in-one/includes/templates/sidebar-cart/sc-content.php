@@ -32,24 +32,6 @@ $settings_attr = function_exists( 'wc_esc_json' ) ? wc_esc_json( $settings_json 
             <div class="vi-wcaio-sidebar-cart-header-title-wrap">
 				<?php echo wp_kses_post( $sidebar_cart->get_params( 'sc_header_title' ) ); ?>
             </div>
-			<?php
-			if ( $is_customize || $sidebar_cart::$settings->get_params( 'sc_header_coupon_enable' ) ) {
-			    if ($last_applied_coupon){
-				    $last_applied_coupon_t= $last_applied_coupon;
-                }else{
-				    $last_applied_coupon_t= esc_attr__( 'Coupon code', 'woo-cart-all-in-one' );
-                }
-				?>
-                <div class="vi-wcaio-sidebar-cart-header-coupon-wrap">
-                    <input type="text" name="coupon_code" id="coupon_code" class="vi-wcaio-coupon-code"
-                           placeholder="<?php echo esc_attr( $last_applied_coupon_t ); ?>">
-                    <button type="submit" class="button vi-wcaio-bt-coupon-code" name="apply_coupon">
-						<?php echo sprintf( '%s', esc_html( apply_filters( 'vi_wcaio_get_bt_coupon_text', esc_html__( 'Apply', 'woo-cart-all-in-one' ) ) ) ); ?>
-                    </button>
-                </div>
-				<?php
-			}
-			?>
             <div class="vi-wcaio-sidebar-cart-close-wrap">
                 <i class="vi_wcaio_cart_icon-clear-button"></i>
             </div>

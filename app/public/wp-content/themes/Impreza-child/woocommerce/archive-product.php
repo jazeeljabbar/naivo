@@ -9,13 +9,19 @@ get_header( 'shop' );
 
 ?>
 <div class="nv-shop-ticker">
-    Too many coffees to choose from? Take <a href="#">our quiz</a> and find your match
+    Take <a href="#">our quiz</a> and find your match
     <button class="nv-ticker-close" aria-label="Close">&times;</button>
 </div>
 
-<div class="nv-shop-banner-fullwidth">
-    <h1>Promotional Banners</h1>
-</div>
+<section class="nv-shop-favorites-hero" aria-label="The World’s Favourite Coffees">
+    <div class="nv-shop-favorites-inner">
+        <h1>The World’s Favourite Coffees</h1>
+        <p class="nv-shop-favorites-location">
+            <img src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/08/location.png' ) ); ?>" alt="" width="24" height="25">
+            <span>Crafted in India</span>
+        </p>
+    </div>
+</section>
 
 <div class="nv-shop-container">
 
@@ -34,6 +40,21 @@ get_header( 'shop' );
                 return array_search($a->slug, $target_slugs) - array_search($b->slug, $target_slugs);
             });
 
+            // Get All Coffee total products count
+            $all_coffee_count = wp_count_posts('product')->publish;
+            $shop_url = get_permalink( wc_get_page_id( 'shop' ) );
+
+            // All Coffee Icon Card
+            echo '<a href="' . esc_url($shop_url) . '" class="nv-cat-item" data-category="all">';
+            echo '<div class="nv-cat-icon">';
+            echo '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 15px 0;"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>';
+            echo '</div>';
+            echo '<div class="nv-cat-details">';
+            echo '<span class="nv-cat-name">All Coffee</span>';
+            echo '<span class="nv-cat-count">' . esc_html($all_coffee_count) . '</span>';
+            echo '</div>';
+            echo '</a>';
+
             foreach ($categories as $category) {
                 $thumbnail_id = get_term_meta( $category->term_id, 'thumbnail_id', true );
                 $image_url    = wp_get_attachment_url( $thumbnail_id );
@@ -43,8 +64,11 @@ get_header( 'shop' );
                 $cat_url = get_term_link( $category );
                 
                 echo '<a href="' . esc_url($cat_url) . '" class="nv-cat-item" data-category="' . esc_attr($category->slug) . '">';
-                echo '<img decoding="async" src="' . esc_url($image_url) . '" alt="' . esc_attr($category->name) . '">';
-                echo '<span>' . esc_html($category->name) . '</span>';
+                echo '<div class="nv-cat-icon"><img decoding="async" src="' . esc_url($image_url) . '" alt="' . esc_attr($category->name) . '"></div>';
+                echo '<div class="nv-cat-details">';
+                echo '<span class="nv-cat-name">' . esc_html($category->name) . '</span>';
+                echo '<span class="nv-cat-count">' . esc_html($category->count) . '</span>';
+                echo '</div>';
                 echo '</a>';
             }
         }
@@ -59,8 +83,14 @@ get_header( 'shop' );
         <button class="nv-mobile-sort-btn" id="nv-mobile-sort-btn">SORT</button>
     </div>
 
+    <div class="nv-mobile-filter-backdrop" id="nv-mobile-filter-backdrop"></div>
+
     <!-- Filter Section -->
     <div class="nv-filter-section" id="nv-filter-section">
+        <div class="nv-mobile-filter-header">
+            <h3>FILTERS</h3>
+            <button class="nv-mobile-filter-close" id="nv-mobile-filter-close" aria-label="Close filters">&times;</button>
+        </div>
         <div class="nv-filter-bar-header">
             <div class="nv-filter-title-row">FILTER</div>
             <div class="nv-sort-title-row">SORT BY</div>
@@ -109,6 +139,10 @@ get_header( 'shop' );
                 <label class="nv-radio-label"><input type="radio" name="orderby" value="date"> <span>Newest</span></label>
             </div>
         </div>
+        </div>
+        <div class="nv-mobile-filter-footer">
+            <button class="nv-mobile-filter-reset" id="nv-mobile-filter-reset">RESET FILTERS</button>
+            <button class="nv-mobile-filter-apply" id="nv-mobile-filter-apply">APPLY FILTERS</button>
         </div>
     </div>
 

@@ -60,12 +60,29 @@ define( 'NONCE_SALT',        ')hMbFd-qo1 |vWx},DZ$5]Qzd*WPjU2pi_G# zog|{ GUDgTAK
 define( 'WP_CACHE_KEY_SALT', 'B:?{ClE1-;UWgC.g)u36+Zm+ pxlt=7^7eq+V9y,F1|8_IpM:UWROM|4@g2=sE3Y' );
 
 define('WP_DEBUG', false);
+define('WP_DEBUG_LOG', false);
+define('WP_DEBUG_DISPLAY', false);
 define('SCRIPT_DEBUG', false);
+
+// Dynamically set Site URL and Home URL
+if (isset($_SERVER['HTTP_HOST'])) {
+    $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ? 'https' : 'http';
+    define('WP_HOME', $protocol . '://' . $_SERVER['HTTP_HOST']);
+    define('WP_SITEURL', $protocol . '://' . $_SERVER['HTTP_HOST']);
+}
+
+// Support for SSL proxy (Cloud Run / Load Balancer)
+if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+    $_SERVER['HTTPS'] = 'on';
+}
+
 
 // Performance Optimizations
 define('FS_METHOD', 'direct');
 define('WP_MEMORY_LIMIT', '512M');
 define('WP_MAX_MEMORY_LIMIT', '1024M');
+
+
 
 
 

@@ -12,12 +12,17 @@ services:
     volumes:
       - ./app/sql/local.sql:/docker-entrypoint-initdb.d/init.sql
       - db_data:/var/lib/mysql
+      - ./conf/mysql/performance.cnf:/etc/mysql/conf.d/performance.cnf
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   wordpress:
     image: wordpress:latest
     restart: always
     ports:
-      - 8000:80
+      - "127.0.0.1:8000:80" # Changes from 8000:80
     environment:
       WORDPRESS_DB_HOST: db
       WORDPRESS_DB_USER: root
@@ -25,8 +30,14 @@ services:
       WORDPRESS_DB_NAME: local
     volumes:
       - ./app/public:/var/www/html
+      - ./conf/php/z-performance.ini:/usr/local/etc/php/conf.d/z-performance.ini
+      - ./conf/apache-performance.conf:/etc/apache2/conf-enabled/z-performance.conf
     depends_on:
       - db
+    deploy:
+      resources:
+        limits:
+          memory: 2G
 
 volumes:
   db_data:

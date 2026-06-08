@@ -1948,3 +1948,24 @@ a.added_to_cart{display:none;}
     font-weight:bold;
     font-style: italic;
   }
+/* ==========================================
+   BLOG META OVERLAP FIX
+   ========================================== */
+.page-id-1201 .w-post-elm.post_author,
+.page-id-1201 .w-post-elm.post_date {
+    display: inline-flex !important;
+    vertical-align: middle !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    margin-right: 25px !important;
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+}
+
+.page-id-1201 .w-post-elm-group {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+}

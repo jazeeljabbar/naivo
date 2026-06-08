@@ -1,5 +1,49 @@
 /* Custom Shop CSS – Figma PLP Match */
 
+html, body {
+    overflow-x: hidden;
+}
+
+/* ============================================================
+   STICKY / FIXED HEADER CLIPPING FIX
+   The Impreza theme sets .l-canvas { overflow: hidden } on
+   mobile (≤599px) which clips position:fixed descendants like
+   the navigation header. overflow-x: clip prevents horizontal
+   scrolling without creating a clipping context for fixed children.
+   ============================================================ */
+@media (max-width: 599px) {
+    .l-canvas {
+        overflow-x: clip !important; /* does NOT clip fixed-positioned children */
+        overflow-y: visible !important;
+    }
+}
+
+/* Ensure the fixed header always paints at the top of the viewport
+   and is never clipped by any ancestor overflow context.
+   NOTE: We intentionally do NOT add transform/will-change here because
+   those properties create a new containing block which would break any
+   position:fixed children inside the header. */
+#page-header.l-header.pos_fixed,
+.l-header.pos_fixed {
+    top: 0 !important;
+    z-index: 9999 !important;
+}
+
+/* Keep logo and nav items vertically centred in sticky/non-sticky state */
+.l-header.pos_fixed .l-subheader.at_middle,
+.l-header.pos_fixed.sticky .l-subheader.at_middle {
+    display: flex !important;
+    align-items: center !important;
+    overflow: visible !important;
+}
+
+/* Prevent the subheader container from being clipped */
+.l-header.pos_fixed .l-subheader,
+.l-header.pos_fixed .l-subheader-h {
+    overflow: visible !important;
+}
+
+
 .nv-shop-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -60,18 +104,121 @@
     width: 100vw;
     margin-left: calc(-50vw + 50%);
     height: 300px;
-    background: url('../images/shop-banner.png') center center/cover no-repeat;
+    background-color: #d9c5b2;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
     margin-bottom: 30px;
+    overflow: hidden;
 }
-.nv-shop-banner-fullwidth h1 {
-    font-size: 36px !important;
-    font-weight: bold !important;
-    color: #fff !important;
-    margin: 0 !important;
+
+.nv-banner-images {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    gap: 0;
+}
+
+.nv-banner-images img {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+    max-width: 50%;
+}
+
+/* ==========================================
+   SHOP FAVOURITES HERO
+   ========================================== */
+.nv-shop-favorites-hero {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-bottom: 30px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.nv-shop-favorites-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 58px 45px 48px;
+}
+
+.nv-shop-favorites-inner h1 {
+    margin: 0 0 18px;
+    color: #202020;
+    font-size: 50px;
+    line-height: 1.2;
+    font-weight: 700;
+    text-align: center;
+}
+
+.nv-shop-favorites-location {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 0 40px;
+    color: #404040;
+    font-size: 17px;
+    line-height: 1.4;
+}
+
+.nv-shop-favorites-location img {
+    width: 24px;
+    height: 25px;
+    flex: 0 0 auto;
+}
+
+.nv-shop-icon-ticker {
+    overflow: hidden;
+    width: 100%;
+}
+
+.nv-shop-icon-ticker-track {
+    display: flex;
+    align-items: center;
+    width: max-content;
+    animation: nv-shop-icon-ticker 28s linear infinite;
+}
+
+.nv-shop-icon-ticker:hover .nv-shop-icon-ticker-track {
+    animation-play-state: paused;
+}
+
+.nv-shop-icon-ticker-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    width: 350px;
+    padding: 24px;
+    color: #404040 !important;
+    font-size: 13px;
+    line-height: 21.86px;
+    letter-spacing: 1.67px;
+    font-weight: 800;
+    text-transform: uppercase;
+    text-decoration: none !important;
+    flex: 0 0 auto;
+}
+
+.nv-shop-icon-ticker-item img {
+    width: auto;
+    height: 45px;
+    max-width: 48px;
+    object-fit: contain;
+    flex: 0 0 auto;
+}
+
+@keyframes nv-shop-icon-ticker {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-1400px);
+    }
 }
 
 /* ==========================================
@@ -79,35 +226,112 @@
    ========================================== */
 .nv-categories-strip {
     display: flex;
-    gap: 40px;
-    overflow-x: auto;
-    padding-bottom: 5px;
+    gap: 20px;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    padding-bottom: 15px;
     margin-bottom: 20px;
     border-bottom: 1px solid #eaeaea;
-    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.nv-categories-strip::-webkit-scrollbar {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .nv-categories-strip {
+        justify-content: center;
+        flex-wrap: wrap;
+        overflow-x: visible;
+        gap: 24px;
+    }
 }
 
 .nv-cat-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    color: #333;
-    font-weight: bold;
-    font-size: 13px;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    padding-bottom: 10px;
+    justify-content: center;
+    background: #f4f6fc;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 15px;
+    min-width: 110px;
     flex-shrink: 0;
-}
-.nv-cat-item.active {
-    border-bottom: 2px solid #000;
+    text-decoration: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    cursor: pointer;
 }
 
-.nv-cat-item img {
+.nv-cat-item:hover {
+    background-color: rgba(242, 106, 33, 0.06);
+    border-color: #f26a21;
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+
+.nv-cat-item:hover .nv-cat-name,
+.nv-cat-item:hover .nv-cat-count {
+    color: #f26a21;
+}
+
+.nv-cat-item:hover svg {
+    stroke: #f26a21 !important;
+}
+
+.nv-cat-item.active {
+    background: #111;
+    color: #fff;
+    border-color: #111;
+}
+
+.nv-cat-icon {
     height: 70px;
-    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.nv-cat-icon img {
+    max-height: 100%;
+    max-width: 100%;
     object-fit: contain;
+}
+
+.nv-cat-details {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+}
+
+.nv-cat-name {
+    color: inherit;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left;
+}
+.nv-cat-item.active .nv-cat-name, .nv-cat-item.active .nv-cat-count {
+    color: #fff;
+}
+
+.nv-cat-count {
+    font-size: 10px;
+    font-weight: 600;
+    background: rgba(0,0,0,0.05);
+    padding: 2px 6px;
+    border-radius: 10px;
+    color: #555;
+}
+.nv-cat-item.active .nv-cat-count {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
 }
 
 /* ==========================================
@@ -157,6 +381,14 @@
     margin-bottom: 5px;
 }
 
+/* Hide mobile-specific filter elements on desktop */
+.nv-mobile-filter-header {
+    display: none !important;
+}
+.nv-mobile-filter-footer {
+    display: none !important;
+}
+
 .nv-filter-bar-header {
     display: flex;
     justify-content: space-between;
@@ -165,18 +397,19 @@
 }
 
 .nv-filter-title-row {
-    font-weight: bold;
-    text-transform: uppercase;
-    font-size: 14px;
-    letter-spacing: 0.5px;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    font-size: 12px !important;
+    letter-spacing: 1.5px !important;
+    color: #777777 !important;
 }
 
 .nv-sort-title-row {
-    font-weight: bold;
-    text-transform: uppercase;
-    font-size: 14px;
-    letter-spacing: 0.5px;
-    color: #000;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    font-size: 12px !important;
+    letter-spacing: 1.5px !important;
+    color: #777777 !important;
 }
 
 /* Filter Bar */
@@ -215,6 +448,7 @@
     align-items: center !important;
     gap: 8px !important;
     white-space: nowrap !important;
+    width: max-content !important;
 }
 
 .nv-badge-count {
@@ -260,6 +494,7 @@
     cursor: pointer;
     font-size: 13px;
     gap: 10px;
+    text-transform: uppercase;
 }
 .nv-checkbox-label:hover, .nv-radio-label:hover {
     background: #f9f9f9;
@@ -277,21 +512,24 @@
 }
 
 .nv-filter-pill {
-    padding: 6px 14px;
-    border: 1px solid #000;
-    border-radius: 20px;
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    background: white;
-    font-weight: bold;
-    text-transform: capitalize;
-    transition: background 0.2s;
+    padding: 6px 14px !important;
+    border: 1px solid #111111 !important;
+    border-radius: 20px !important;
+    font-size: 11px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    background: #ffffff !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    transition: all 0.2s ease !important;
+    width: max-content !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
 }
 .nv-filter-pill:hover {
-    background: #f4f4f4;
+    background: #f4f4f4 !important;
 }
 
 /* ==========================================
@@ -303,6 +541,7 @@
     color: #666;
 }
 
+
 .nv-filter-section {
     position: relative;
     z-index: 1000 !important; /* Ensure filters are above product grid */
@@ -313,8 +552,8 @@
    ========================================== */
 .nv-product-grid {
     display: grid !important;
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 20px !important;
+    grid-template-columns: repeat(3, 1fr) !important; /* 3 Columns matching live site */
+    gap: 30px 24px !important;
     margin: 0 !important;
     padding: 0 !important;
     position: relative !important;
@@ -346,22 +585,23 @@
    PRODUCT CARD
    ========================================== */
 div.nv-product-card {
-    border: 1px solid #e0e0e0 !important;
+    border: 1px solid #eaeaea !important;
     border-radius: 16px !important;
     overflow: hidden !important;
     position: relative !important;
     background: #fff !important;
     display: flex !important;
     flex-direction: column !important;
-    padding: 16px !important;
+    padding: 0 !important;           /* NO card-level padding – image must reach edges */
     margin: 0 !important;
     width: 100% !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.02) !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.01) !important;
     font-family: inherit !important;
-    transition: box-shadow 0.3s ease, transform 0.2s ease !important;
+    transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease !important;
+    height: 100% !important;
 }
 div.nv-product-card:hover {
-    box-shadow: 0 8px 25px rgba(0,0,0,0.06) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06) !important;
 }
 
 /* Hide default Impreza dot or list styles */
@@ -373,82 +613,136 @@ div.nv-product-card::before, div.nv-product-card::after {
    PRODUCT IMAGE AREA
    ========================================== */
 .nv-product-card .nv-product-img {
-    background: #f4eee8 !important;
-    height: 220px !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
     position: relative !important;
-    padding: 20px 20px 48px 20px !important;
-    width: 100% !important;
-    border-radius: 12px !important;
+    width: 100% !important;          /* full card width – no card padding in the way */
+    border-radius: 0 !important;     /* card border-radius + overflow:hidden clips it */
+    overflow: hidden !important;
+    margin-bottom: 0 !important;     /* gap between image and details handled by info padding-top */
+    flex-shrink: 0 !important;
 }
 
-.nv-product-card .nv-product-img img {
-    max-height: 100% !important;
-    max-width: 100% !important;
-    object-fit: contain !important;
-    width: auto !important;
+.nv-product-image-container {
+    position: relative !important;
+    width: 100% !important;
+    /* No fixed aspect-ratio – let the image dictate height, matching homepage grid */
+    background: #ffffff !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    display: block !important;
+}
+
+/* Primary image: full-width, natural height – identical to homepage (.w-post-elm.stretched img) */
+.nv-primary-image {
+    display: block !important;
+    width: 100% !important;
     height: auto !important;
-    margin: 0 !important;
+    object-fit: unset !important;   /* no cropping, natural dimensions */
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Hover image: absolute overlay over the natural-height container */
+.nv-hover-image {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;   /* show full hover image (chart or product) */
+    object-position: center center !important;
+    background: #ffffff !important;   /* white bg so no container bleed-through */
+    transform: scale(0.97) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Smooth Premium Hover Transitions */
+.nv-product-card:hover .nv-primary-image {
+    opacity: 0 !important;
+    transform: scale(0.98) !important;
+}
+
+.nv-product-card:hover .nv-hover-image {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+}
+
+/* Mobile tap details toggle support */
+.nv-product-card.nv-show-details .nv-primary-image {
+    opacity: 0 !important;
+    transform: scale(0.98) !important;
+}
+
+.nv-product-card.nv-show-details .nv-hover-image {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+}
+
+/* Mobile Details Toggle Button */
+.nv-mobile-details-toggle {
+    display: none !important; /* Hidden on desktop */
+}
+
+@media (max-width: 1024px) {
+    .nv-mobile-details-toggle {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: absolute !important;
+        top: 12px !important;
+        right: 12px !important;
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 50% !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        border: 1px solid #eaeaea !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+        z-index: 10 !important;
+        cursor: pointer !important;
+        color: #111 !important;
+        padding: 0 !important;
+    }
 }
 
 /* ==========================================
-   BADGES
+   OVERLAY BADGES (Roast & Origin)
    ========================================== */
-.nv-product-card .nv-badges {
+.nv-overlay-badges {
     position: absolute !important;
-    top: 0 !important;
-    right: 0 !important;
-    z-index: 2 !important;
+    bottom: 12px !important;
+    left: 12px !important;
+    right: 12px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    z-index: 5 !important;
+    pointer-events: none !important;
 }
 
-.nv-product-card .nv-badge {
-    background: #111 !important;
-    color: #fff !important;
-    font-size: 10px !important;
-    font-weight: bold !important;
-    padding: 6px 14px !important;
-    border-radius: 0 12px 0 12px !important;
+.nv-overlay-badge {
+    background: #ffffff !important;
+    color: #404040 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    padding: 6px 12px !important;
+    border-radius: 20px !important;
     display: inline-flex !important;
     align-items: center !important;
-    gap: 4px !important;
+    gap: 5px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+    border: 1px solid #eaeaea !important;
+    text-transform: capitalize !important;
 }
 
-.nv-product-card .nv-badge.new::before {
-    content: '⚡';
-}
-
-.nv-product-card .nv-badge-secondary {
-    position: absolute !important;
-    bottom: 10px !important;
-    right: 10px !important;
-    background: #f0f4ff !important;
-    color: #3b5998 !important;
-    padding: 6px 14px !important;
-    border-radius: 20px !important;
-    font-size: 11px !important;
-    font-weight: bold !important;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
-    z-index: 2 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-}
-/* Stop wp-emoji from breaking the layout */
-.nv-badge-secondary img.emoji {
-    width: 14px !important;
-    height: 14px !important;
-    display: inline-block !important;
-    margin: 0 !important;
-    box-shadow: none !important;
+.nv-badge-svg {
+    color: #777777 !important;
+    flex-shrink: 0 !important;
 }
 
 /* ==========================================
-   PRODUCT INFO SECTION
+   PRODUCT DETAILS & TYPOGRAPHY
    ========================================== */
 .nv-product-card .nv-product-info {
-    padding: 16px 0 0 0 !important;
+    padding: 16px 20px 20px !important; /* top gap replaces removed margin-bottom on img */
     display: flex !important;
     flex-direction: column !important;
     flex-grow: 1 !important;
@@ -456,198 +750,175 @@ div.nv-product-card::before, div.nv-product-card::after {
     text-align: left !important;
 }
 
+.nv-badge-price-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin-bottom: 12px !important;
+}
+
+.nv-flavour-badge {
+    padding: 6px 12px !important;
+    border-radius: 20px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    text-transform: capitalize !important;
+    white-space: nowrap !important;
+    width: max-content !important;
+    flex-shrink: 0 !important;
+    max-width: none !important;
+}
+
+.nv-flavour-emoji {
+    width: 13px !important;
+    height: 13px !important;
+    object-fit: contain !important;
+    margin: 0 !important;
+    display: inline-block !important;
+}
+
 .nv-product-card .nv-price {
-    font-size: 20px !important;
-    font-weight: bold !important;
-    margin-bottom: 8px !important;
-    color: #000 !important;
-    text-align: left !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #111 !important;
+    margin: 0 !important;
 }
-.nv-product-card .nv-price .amount { color: #000 !important; font-size: 20px !important; font-weight: bold !important; }
-.nv-product-card .price-prefix { font-size: 14px !important; color: #666 !important; font-weight: normal !important; }
-/* ── Order Summary Card Heading ── */
-.nv-order-summary-title {
-    font-size: 24px !important;
-    font-weight: 600 !important;
-    margin-bottom: 24px !important;
-    text-align: left !important;
+.nv-product-card .nv-price .amount {
+    color: #111 !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
 }
-.nv-order-summary-title .nv-order-count {
-    font-size: 16px;
-    font-weight: 400;
-    color: #888;
+
+.price-from {
+    font-family: Georgia, serif !important;
+    font-style: italic !important;
+    font-size: 13px !important;
+    color: #555 !important;
+    font-weight: 400 !important;
+    margin-right: 2px !important;
+    text-transform: lowercase !important;
 }
 
 .nv-product-card .nv-title {
-    font-size: 15px !important;
-    font-weight: bold !important;
-    margin-bottom: 4px !important;
-    color: #000 !important;
-    line-height: 1.3 !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    margin-bottom: 6px !important;
+    color: #111 !important;
+    line-height: 1.25 !important;
     text-align: left !important;
     width: 100% !important;
+    transition: color 0.2s ease !important;
+}
+.nv-product-card .nv-title:hover {
+    color: #8b5a2b !important; /* Premium hover color */
 }
 
 .nv-product-card .nv-subtitle {
-    font-size: 12px !important;
+    font-size: 13px !important;
     color: #666 !important;
-    margin-bottom: 12px !important;
-    line-height: 1.4 !important;
+    margin-bottom: 20px !important;
+    line-height: 1.45 !important;
     text-align: left !important;
 }
 
-.nv-shop-container {
-    padding-bottom: 120px !important;
-}
-
 /* ==========================================
-   PRODUCT FEATURES (Roast | Country)
-   ========================================== */
-.nv-product-card .nv-features {
-    display: flex !important;
-    gap: 10px !important;
-    font-size: 12px !important;
-    color: #444 !important;
-    margin-bottom: 16px !important;
-    align-items: center !important;
-    text-transform: capitalize !important;
-}
-
-.nv-product-card .nv-feature {
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    background: transparent !important;
-    padding: 0 !important;
-    border-radius: 0 !important;
-}
-
-.nv-product-card .nv-feature svg {
-    flex-shrink: 0 !important;
-}
-
-/* ==========================================
-   PRODUCT ACTIONS (Cart + Buy Now)
+   CTA BUY & CART BUTTONS (Side-by-Side)
    ========================================== */
 .nv-product-card .nv-actions {
     display: flex !important;
-    gap: 10px !important;
-    margin-top: auto !important;
-    flex-direction: row !important;
+    gap: 8px !important;
     width: 100% !important;
+    margin-top: auto !important; /* Push CTA to bottom for equal alignment */
+    align-items: center !important;
 }
 
-.nv-product-card .nv-cart-btn {
-    border: 1px solid #111 !important;
-    background: #fff !important;
-    width: 44px !important;
-    height: 44px !important;
-    border-radius: 6px !important;
+.nv-product-card .nv-buy-btn {
+    flex-grow: 1 !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
+    height: 46px !important;
+    background: #111111 !important;
+    color: #ffffff !important;
+    border: 1px solid #111111 !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
     cursor: pointer !important;
-    flex-shrink: 0 !important;
-    color: #111 !important;
-    text-align: center !important;
     transition: all 0.2s ease !important;
-    text-indent: 0 !important;
+    box-sizing: border-box !important;
 }
 
-.nv-product-card .nv-cart-btn svg {
-    width: 20px !important;
-    height: 20px !important;
-    display: block !important;
-    visibility: visible !important;
-    stroke: #111 !important;
+.nv-product-card .nv-buy-btn:hover {
+    background: #333333 !important;
+    border-color: #333333 !important;
+}
+
+.nv-product-card .nv-buy-btn-oos {
+    background: #f0f0f0 !important;
+    color: #999999 !important;
+    border-color: #f0f0f0 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+}
+
+.nv-product-card .nv-cart-btn {
+    width: 46px !important;
+    height: 46px !important;
+    border: 1px solid #111111 !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #111111 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+    position: relative !important;
 }
 
 .nv-product-card .nv-cart-btn:hover {
     background: #f4f4f4 !important;
 }
 
-.nv-product-card .nv-buy-btn {
-    background: #111 !important;
-    color: #fff !important;
-    border: 1px solid #111 !important;
-    border-radius: 6px !important;
-    flex-grow: 1 !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    text-transform: capitalize !important;
-    font-size: 14px !important;
-    height: 44px !important;
-    text-align: center !important;
-    letter-spacing: normal !important;
-    transition: all 0.2s ease !important;
+.nv-product-card .nv-cart-btn-oos {
+    border-color: #eaeaea !important;
+    background: #fdfdfd !important;
+    color: #cccccc !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
 }
 
-.nv-product-card .nv-buy-btn:hover {
-    background: #fff !important;
-    color: #111 !important;
-}
-
-/* ── Cart Button: SVG icon visibility states ── */
-.nv-product-card .nv-cart-btn .nv-cart-spinner,
-.nv-product-card .nv-cart-btn .nv-cart-check {
+/* Hide WooCommerce added_to_cart text link as we use built-in icons/drawer */
+.nv-product-card .nv-actions .added_to_cart {
     display: none !important;
 }
-.nv-product-card .nv-cart-btn .nv-cart-icon {
-    display: block !important;
-}
 
-/* ── Loading state (AJAX in progress) ── */
-.nv-product-card .nv-cart-btn.nv-adding .nv-cart-icon,
+/* AJAX Spinner & Checkmark states */
 .nv-product-card .nv-cart-btn.loading .nv-cart-icon {
     display: none !important;
 }
-.nv-product-card .nv-cart-btn.nv-adding .nv-cart-spinner,
 .nv-product-card .nv-cart-btn.loading .nv-cart-spinner {
     display: block !important;
-    animation: nv-spin 0.8s linear infinite;
+    animation: nv-spin 0.8s linear infinite !important;
 }
-.nv-product-card .nv-cart-btn.nv-adding,
-.nv-product-card .nv-cart-btn.loading {
-    pointer-events: none !important;
-    opacity: 0.7 !important;
-}
-
-/* ── Success state (just added) ── */
-.nv-product-card .nv-cart-btn.nv-added .nv-cart-icon,
 .nv-product-card .nv-cart-btn.added .nv-cart-icon {
     display: none !important;
 }
-.nv-product-card .nv-cart-btn.nv-added .nv-cart-check,
+.nv-product-card .nv-cart-btn.added .nv-cart-spinner {
+    display: none !important;
+}
 .nv-product-card .nv-cart-btn.added .nv-cart-check {
     display: block !important;
-    animation: nv-pop 0.3s ease-out;
-}
-.nv-product-card .nv-cart-btn.nv-added,
-.nv-product-card .nv-cart-btn.added {
-    border-color: #2e7d32 !important;
-    background: #e8f5e9 !important;
-}
-.nv-product-card .nv-cart-btn.nv-added svg,
-.nv-product-card .nv-cart-btn.added svg {
-    stroke: #2e7d32 !important;
-}
-
-/* ── Out of Stock styles ── */
-.nv-product-card .nv-cart-btn-oos {
-    opacity: 0.4 !important;
-    cursor: not-allowed !important;
-    pointer-events: none !important;
-}
-.nv-product-card .nv-buy-btn-oos {
-    background: #999 !important;
-    color: #fff !important;
-    border-color: #999 !important;
-    cursor: not-allowed !important;
-    pointer-events: none !important;
-    opacity: 0.6 !important;
+    animation: nv-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
 }
 
 /* ── Header cart badge pulse ── */
@@ -729,9 +1000,8 @@ div.nv-product-card::before, div.nv-product-card::after {
    RESPONSIVE BREAKPOINTS
    ========================================== */
 
-/* Tablets */
 @media(max-width: 1024px) {
-    .nv-product-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    .nv-product-grid { grid-template-columns: repeat(2, 1fr) !important; }
 }
 
 /* Mobile */
@@ -749,6 +1019,45 @@ div.nv-product-card::before, div.nv-product-card::after {
     .nv-shop-banner-fullwidth h1 {
         font-size: 24px !important;
     }
+
+    .nv-shop-favorites-inner {
+        padding: 28px 16px 24px;
+    }
+    .nv-shop-favorites-inner h1 {
+        font-size: 26px;
+        line-height: 1.18;
+        margin-bottom: 10px;
+    }
+    .nv-shop-favorites-location {
+        justify-content: center;
+        margin-bottom: 18px;
+        font-size: 13px;
+    }
+    .nv-shop-favorites-location img {
+        width: 18px;
+        height: 19px;
+    }
+    .nv-shop-icon-ticker-item {
+        width: 210px;
+        padding: 12px;
+        justify-content: flex-start;
+        gap: 10px;
+        font-size: 10px;
+        line-height: 15px;
+        letter-spacing: 0.9px;
+    }
+    .nv-shop-icon-ticker-item img {
+        height: 32px;
+        max-width: 36px;
+    }
+    @keyframes nv-shop-icon-ticker {
+        from {
+            transform: translateX(0);
+        }
+        to {
+            transform: translateX(-840px);
+        }
+    }
     
     .nv-categories-strip {
         gap: 20px;
@@ -760,6 +1069,36 @@ div.nv-product-card::before, div.nv-product-card::after {
         font-size: 11px;
     }
     
+    /* Mobile Filter Backdrop - Global Rules outside Media Query are defined here */
+    .nv-mobile-filter-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(2px);
+        z-index: 9999;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .nv-mobile-filter-backdrop.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    body.nv-filter-active {
+        overflow: hidden !important;
+    }
+
+    .nv-mobile-filter-header {
+        display: none;
+    }
+    .nv-mobile-filter-footer {
+        display: none;
+    }
+
     /* Show mobile toggle, hide desktop filter section */
     .nv-mobile-filter-toggle {
         display: flex !important;
@@ -768,47 +1107,214 @@ div.nv-product-card::before, div.nv-product-card::after {
         display: none;
     }
     .nv-filter-section.nv-mobile-open {
-        display: block;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: #fff;
-        z-index: 1000;
-        overflow-y: auto;
-        padding: 20px;
-    }
-    .nv-filter-section.nv-mobile-open .nv-filter-bar {
+        display: flex !important;
         flex-direction: column !important;
-        align-items: stretch !important;
+        position: fixed !important;
+        top: 0 !important;
+        right: 0 !important; /* Slide-in default when open */
+        width: 85% !important;
+        max-width: 380px !important;
+        height: 100% !important;
+        background: #fff !important;
+        z-index: 10000 !important;
+        box-shadow: -6px 0 24px rgba(0, 0, 0, 0.15) !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
-    .nv-filter-section.nv-mobile-open .nv-custom-dropdown {
-        display: block !important;
-        width: 100% !important;
-    }
-    .nv-filter-section.nv-mobile-open .nv-dropdown-btn {
-        width: 100% !important;
-        justify-content: space-between !important;
-        border-radius: 8px !important;
-    }
-    .nv-filter-section.nv-mobile-open .nv-sort-dropdown {
-        margin-left: 0 !important;
+    .nv-filter-section {
+        position: fixed !important;
+        top: 0 !important;
+        right: -100% !important; /* Start slid out */
+        width: 85% !important;
+        max-width: 380px !important;
+        height: 100% !important;
+        background: #fff !important;
+        z-index: 10000 !important;
+        box-shadow: -6px 0 24px rgba(0, 0, 0, 0.15) !important;
+        transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
     }
     
-    /* Add a close button for mobile filter overlay */
-    .nv-filter-section.nv-mobile-open::before {
-        content: 'FILTERS';
-        display: block;
-        font-size: 18px;
-        font-weight: 700;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #eee;
+    /* Header style */
+    .nv-filter-section.nv-mobile-open .nv-mobile-filter-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 16px 20px !important;
+        border-bottom: 1px solid #f5f5f5 !important;
+        background: #fff !important;
+    }
+    .nv-mobile-filter-header h3 {
+        margin: 0 !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        letter-spacing: 2px !important;
+        color: #111111 !important;
+        text-transform: uppercase !important;
+        font-family: 'Manrope', 'Inter', sans-serif !important;
+    }
+    .nv-mobile-filter-close {
+        background: none !important;
+        border: none !important;
+        font-size: 24px !important;
+        color: #888 !important;
+        cursor: pointer !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 32px !important;
+        height: 32px !important;
+        transition: color 0.2s ease !important;
+    }
+    .nv-mobile-filter-close:hover {
+        color: #111 !important;
+    }
+
+    /* Hide desktop headers in mobile */
+    .nv-filter-bar-header {
+        display: none !important;
+    }
+
+    /* Scrollable body wrapper: Filter Bar acts as body */
+    .nv-filter-section .nv-filter-bar {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 20px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 16px !important;
+        border: none !important;
+        margin: 0 !important;
+        background: #fff !important;
+    }
+    
+    /* Custom Dropdowns as inline accordions */
+    .nv-filter-section .nv-custom-dropdown {
+        display: block !important;
+        width: 100% !important;
+        border-bottom: 1px solid #f0f0f0 !important;
+        padding-bottom: 14px !important;
+    }
+    
+    .nv-filter-section .nv-dropdown-btn {
+        width: 100% !important;
+        height: 48px !important; /* Premium tap target size */
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        color: #111 !important;
+        justify-content: space-between !important;
+        border-radius: 0 !important;
+    }
+    
+    /* Accordion Dropdown Menus */
+    .nv-filter-section .nv-dropdown-menu {
+        position: static !important;
+        display: none !important;
+        width: 100% !important;
+        box-shadow: none !important;
+        border: none !important;
+        background: #fafafa !important;
+        padding: 10px 14px !important;
+        margin-top: 8px !important;
+        border-radius: 8px !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+    }
+    
+    .nv-filter-section .nv-custom-dropdown.open .nv-dropdown-menu {
+        display: block !important;
+    }
+    
+    /* Chevron animation on open */
+    .nv-filter-section .nv-custom-dropdown.open .nv-chevron {
+        transform: rotate(180deg) !important;
+    }
+    .nv-filter-section .nv-chevron {
+        transition: transform 0.2s ease !important;
+    }
+    
+    /* List items in accordion */
+    .nv-filter-section .nv-checkbox-label,
+    .nv-filter-section .nv-radio-label {
+        padding: 12px 0 !important; /* Premium touch target spacing */
+        font-size: 13px !important;
+        border-bottom: 1px solid #f0f0f0 !important;
+    }
+    .nv-filter-section .nv-checkbox-label:last-child,
+    .nv-filter-section .nv-radio-label:last-child {
+        border-bottom: none !important;
+    }
+
+    /* Sticky Drawer Footer */
+    .nv-filter-section.nv-mobile-open .nv-mobile-filter-footer {
+        display: flex !important;
+        gap: 12px !important;
+        padding: 16px 20px !important;
+        border-top: 1px solid #f5f5f5 !important;
+        background: #fff !important;
+        position: sticky !important;
+        bottom: 0 !important;
+        z-index: 10 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .nv-mobile-filter-reset {
+        flex: 1 !important;
+        height: 44px !important;
+        background: transparent !important;
+        color: #111111 !important;
+        border: 1px solid #111111 !important;
+        border-radius: 30px !important;
+        font-weight: 700 !important;
+        font-size: 12px !important;
+        letter-spacing: 0.5px !important;
+        text-transform: uppercase !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.2s ease !important;
+    }
+    .nv-mobile-filter-reset:hover {
+        background: #f9f9f9 !important;
+    }
+    
+    .nv-mobile-filter-apply {
+        flex: 2 !important;
+        height: 44px !important;
+        background: #111111 !important;
+        color: #ffffff !important;
+        border: 1px solid #111111 !important;
+        border-radius: 30px !important;
+        font-weight: 700 !important;
+        font-size: 12px !important;
+        letter-spacing: 0.5px !important;
+        text-transform: uppercase !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 4px 12px rgba(17, 17, 17, 0.15) !important;
+    }
+    .nv-mobile-filter-apply:hover {
+        background: #333333 !important;
+        border-color: #333333 !important;
     }
     
     .nv-product-card .nv-product-img {
-        height: 180px !important;
+        height: auto !important;
     }
     
     .nv-product-card .nv-price {
@@ -825,31 +1331,61 @@ div.nv-product-card::before, div.nv-product-card::after {
     }
     
     .nv-product-card .nv-buy-btn {
-        font-size: 12px !important;
+        font-size: 11px !important;
         height: 38px !important;
+        letter-spacing: 0.4px !important;
+        padding: 0 10px !important;
     }
     .nv-product-card .nv-cart-btn {
         width: 38px !important;
         height: 38px !important;
+        border-radius: 6px !important;
     }
 }
 
 @media(max-width: 480px) {
-    .nv-product-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .nv-product-grid { grid-template-columns: repeat(1, 1fr) !important; }
+
+    .nv-shop-favorites-inner h1 {
+        font-size: 23px;
+    }
+    .nv-shop-favorites-inner {
+        padding: 24px 14px 20px;
+    }
+    .nv-shop-favorites-location {
+        margin-bottom: 14px;
+        font-size: 12px;
+    }
+    .nv-shop-icon-ticker-item {
+        width: 185px;
+        gap: 8px;
+        padding: 10px;
+        font-size: 9px;
+        line-height: 14px;
+        letter-spacing: 0.7px;
+    }
+    .nv-shop-icon-ticker-item img {
+        height: 30px;
+        max-width: 34px;
+    }
+    @keyframes nv-shop-icon-ticker {
+        from {
+            transform: translateX(0);
+        }
+        to {
+            transform: translateX(-740px);
+        }
+    }
     
     div.nv-product-card {
-        padding: 10px !important;
+        padding: 0 !important;          /* image stays edge-to-edge on mobile too */
+    }
+    .nv-product-card .nv-product-info {
+        padding: 12px 14px 14px !important; /* tighter details padding on small screens */
     }
     .nv-product-card .nv-product-img {
-        height: 150px !important;
-        padding: 12px 12px 40px 12px !important;
-    }
-    .nv-product-card .nv-badge-secondary {
-        font-size: 9px !important;
-        padding: 4px 10px !important;
-    }
-    .nv-product-card .nv-features {
-        font-size: 10px !important;
+        height: auto !important;
+        margin-bottom: 0 !important;
     }
 }
 
@@ -879,7 +1415,7 @@ div.nv-product-card::before, div.nv-product-card::after {
 .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-header-wrap {
     background: #fff !important;
     border-bottom: 1px solid #eaeaea !important;
-    padding: 20px 24px !important;
+    padding: 12px 20px !important;
     display: flex !important;
     flex-wrap: wrap !important;
     align-items: center !important;
@@ -903,7 +1439,7 @@ div.nv-product-card::before, div.nv-product-card::after {
 /* Close icon */
 .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-close-wrap {
     position: absolute !important;
-    top: 18px !important;
+    top: 12px !important;
     right: 20px !important;
     cursor: pointer !important;
 }
@@ -924,7 +1460,8 @@ div.nv-product-card::before, div.nv-product-card::after {
 
 /* ── Product List Area ────────────────────────── */
 .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-products-wrap {
-    flex: 1 !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
     overflow-y: auto !important;
     background: #fff !important;
     padding: 0 !important;
@@ -934,7 +1471,7 @@ div.nv-product-card::before, div.nv-product-card::after {
 .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-products-wrap::before {
     content: '' !important;
     display: block !important;
-    padding: 12px 24px !important;
+    padding: 8px 20px !important;
     font-size: 11px !important;
     font-weight: 700 !important;
     text-transform: uppercase !important;
@@ -952,9 +1489,9 @@ div.nv-product-card::before, div.nv-product-card::after {
 /* ── Product Item Card ────────────────────────── */
 .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-pd-wrap {
     display: flex !important;
-    padding: 20px 24px !important;
+    padding: 12px 20px !important;
     border-bottom: 1px solid #f0f0f0 !important;
-    gap: 16px !important;
+    gap: 12px !important;
     align-items: flex-start !important;
     position: relative !important;
     margin: 0 !important;
@@ -967,9 +1504,9 @@ div.nv-product-card::before, div.nv-product-card::after {
 
 /* Product Image */
 .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-pd-img-wrap {
-    width: 80px !important;
-    min-width: 80px !important;
-    height: 80px !important;
+    width: 64px !important;
+    min-width: 64px !important;
+    height: 64px !important;
     border-radius: 8px !important;
     overflow: hidden !important;
     background: #f8f5f0 !important;
@@ -989,7 +1526,7 @@ div.nv-product-card::before, div.nv-product-card::after {
     flex: 1 !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 8px !important;
+    gap: 4px !important;
     min-width: 0 !important;
 }
 
@@ -1101,7 +1638,9 @@ div.nv-product-card::before, div.nv-product-card::after {
     line-height: 1.6 !important;
     display: flex !important;
     flex-wrap: wrap !important;
-    gap: 6px !important;
+    gap: 8px !important;
+    align-items: center !important;
+    margin-top: 6px !important;
 }
 
 /* ── Editable Variation Dropdown Selects ── */
@@ -1111,9 +1650,11 @@ div.nv-product-card::before, div.nv-product-card::after {
     background: #f7f7f7 !important;
     border: 1px solid #e0e0e0 !important;
     border-radius: 6px !important;
-    padding: 4px 8px 4px 10px !important;
-    gap: 4px !important;
+    padding: 0 10px !important;
+    gap: 6px !important;
     font-size: 12px !important;
+    height: 30px !important;
+    box-sizing: border-box !important;
     transition: border-color 0.2s !important;
 }
 .vi-wcaio-sidebar-cart .nv-variation-select-wrap:hover {
@@ -1125,6 +1666,12 @@ div.nv-product-card::before, div.nv-product-card::after {
     color: #888 !important;
     white-space: nowrap !important;
     pointer-events: none !important;
+    line-height: 28px !important;
+    height: 28px !important;
+    display: flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 .vi-wcaio-sidebar-cart .nv-variation-select {
     -webkit-appearance: none !important;
@@ -1137,13 +1684,19 @@ div.nv-product-card::before, div.nv-product-card::after {
     font-weight: 600 !important;
     color: #333 !important;
     cursor: pointer !important;
-    padding: 0 16px 0 2px !important;
+    padding: 0 20px 0 4px !important;
+    margin: 0 !important;
     font-family: 'Manrope', sans-serif !important;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' fill='none' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
     background-position: right 2px center !important;
     background-size: 10px !important;
-    min-width: 50px !important;
+    min-width: 60px !important;
+    height: 28px !important;
+    line-height: 28px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
 }
 .vi-wcaio-sidebar-cart .nv-variation-select:focus {
     outline: none !important;
@@ -1191,7 +1744,7 @@ div.nv-product-card::before, div.nv-product-card::after {
 /* Price → positioned absolutely at top-right of product card (same line as name) */
 .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-pd-price {
     position: absolute !important;
-    top: 20px !important;
+    top: 12px !important;
     right: 24px !important;
     font-size: 16px !important;
     font-weight: 700 !important;
@@ -1269,11 +1822,13 @@ div.nv-product-card::before, div.nv-product-card::after {
     border-color: #eaeaea !important;
     display: flex !important;
     flex-direction: column !important;
+    flex: 0 0 auto !important;
+    margin-top: auto !important;
 }
 
 /* Subtotal Row */
 .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-footer-cart_total-wrap {
-    padding: 10px 24px !important;
+    padding: 8px 20px !important;
     border-bottom: none !important;
     order: 30 !important;
 }
@@ -1300,7 +1855,7 @@ div.nv-product-card::before, div.nv-product-card::after {
 
 /* Checkout / Nav Buttons */
 .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-footer-action {
-    padding: 0 24px 6px !important;
+    padding: 0 20px 10px !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 10px !important;
@@ -1335,7 +1890,7 @@ div.nv-product-card::before, div.nv-product-card::after {
     color: #fff !important;
     border: none !important;
     border-radius: 6px !important;
-    padding: 16px 24px !important;
+    padding: 12px 20px !important;
     font-size: 15px !important;
     font-weight: 800 !important;
     text-transform: uppercase !important;
@@ -1375,7 +1930,7 @@ div.nv-product-card::before, div.nv-product-card::after {
 
 /* ── Best Selling Section (our JS-created wrapper) ── */
 .vi-wcaio-sidebar-cart .nv-best-selling-section {
-    padding: 14px 24px 10px !important;
+    padding: 10px 20px 8px !important;
     background: #fafaf8 !important;
     border-top: 1px solid #eaeaea !important;
     border-bottom: 1px solid #eaeaea !important;
@@ -1413,7 +1968,7 @@ div.nv-product-card::before, div.nv-product-card::after {
     text-align: center !important;
     line-height: 1.5 !important;
     font-family: 'Manrope', sans-serif !important;
-    padding: 6px 24px 14px !important;
+    padding: 4px 20px 10px !important;
     order: 50 !important;
 }
 .vi-wcaio-sidebar-cart .nv-footer-note strong {
@@ -1760,7 +2315,7 @@ div.nv-product-card::before, div.nv-product-card::after {
 .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-products-wrap::before {
     content: 'Product                                                                                   Total' !important;
     display: block !important;
-    padding: 10px 24px !important;
+    padding: 0px 24px 10px 24px !important;
     font-size: 12px !important;
     font-weight: 600 !important;
     color: #999 !important;
@@ -2390,17 +2945,24 @@ div.nv-product-card::before, div.nv-product-card::after {
 }
 .nv-checkout-discount-section .checkout_coupon p.form-row {
     margin: 0 !important;
-    flex: 1 !important;
+    flex: 1 1 auto !important;
     padding: 0 !important;
+    width: auto !important;
+    max-width: none !important;
 }
 .nv-checkout-discount-section .checkout_coupon p.form-row-first {
-    flex: 1 !important;
+    flex: 1 1 auto !important;
+    width: auto !important;
+    max-width: none !important;
 }
 .nv-checkout-discount-section .checkout_coupon p.form-row-last {
     flex: 0 0 auto !important;
+    width: auto !important;
+    max-width: none !important;
 }
 .nv-checkout-discount-section .checkout_coupon input[type="text"] {
     width: 100% !important;
+    flex: 1 1 auto !important;
     padding: 8px 0 !important;
     border: none !important;
     border-radius: 0 !important;
@@ -2427,9 +2989,14 @@ div.nv-product-card::before, div.nv-product-card::after {
     transition: all 0.2s !important;
 }
 .nv-checkout-discount-section .checkout_coupon button:hover,
-.nv-checkout-discount-section .checkout_coupon input[type="submit"]:hover {
+.nv-checkout-discount-section .checkout_coupon button:hover *,
+.nv-checkout-discount-section .checkout_coupon input[type="submit"]:hover,
+.nv-checkout-discount-section .checkout_coupon input[type="submit"]:hover *,
+.woocommerce .nv-checkout-discount-section .checkout_coupon button:hover,
+.woocommerce .nv-checkout-discount-section .checkout_coupon button:hover span,
+.woocommerce .nv-checkout-discount-section .checkout_coupon button:hover .w-btn-label {
     background: #333 !important;
-    color: #fff !important;
+    color: #ffffff !important;
     border-color: #333 !important;
 }
 
@@ -2653,6 +3220,8 @@ body.woocommerce-checkout .l-main {
 /* ── Coupon form button text fix ── */
 .nv-checkout-discount-section .checkout_coupon .form-row-last {
     flex-shrink: 0 !important;
+    width: auto !important;
+    max-width: none !important;
 }
 .nv-checkout-discount-section .checkout_coupon button.button,
 .nv-checkout-discount-section .checkout_coupon input.button {
@@ -2671,9 +3240,14 @@ body.woocommerce-checkout .l-main {
     min-width: 80px !important;
 }
 .nv-checkout-discount-section .checkout_coupon button.button:hover,
-.nv-checkout-discount-section .checkout_coupon input.button:hover {
+.nv-checkout-discount-section .checkout_coupon button.button:hover *,
+.nv-checkout-discount-section .checkout_coupon input.button:hover,
+.nv-checkout-discount-section .checkout_coupon input.button:hover *,
+.woocommerce .nv-checkout-discount-section .checkout_coupon button.button:hover,
+.woocommerce .nv-checkout-discount-section .checkout_coupon button.button:hover span,
+.woocommerce .nv-checkout-discount-section .checkout_coupon button.button:hover .w-btn-label {
     background: #333 !important;
-    color: #fff !important;
+    color: #ffffff !important;
     border-color: #333 !important;
 }
 
@@ -2701,8 +3275,1881 @@ body.woocommerce-checkout .l-main {
     color: #555 !important;
 }
 
-/* ── Fix Country dropdown appearance ── */
-.woocommerce-checkout .country_select {
-    appearance: auto !important;
-    -webkit-appearance: auto !important;
+/* ==========================================
+   SINGLE PRODUCT REDESIGN (PDP)
+   ========================================== */
+
+/* ── Product Summary Layout ── */
+/* ── Product Summary Layout ── */
+.single-product div.product {
+    display: block !important;
+}
+.single-product div.product::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+.single-product div.product .images,
+.single-product .woocommerce-product-gallery {
+    float: left !important;
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-bottom: 30px !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border-radius: 16px !important; /* Standardize border radius */
+}
+.single-product div.product .summary {
+    float: right !important;
+    width: 50% !important;
+    padding-left: 40px !important;
+    margin: 0 !important;
+}
+
+/* ── Product Gallery Slider/Carousel Fix ── */
+.woocommerce-product-gallery__wrapper {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.woocommerce-product-gallery .flex-control-nav {
+    position: relative !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    margin-top: 15px !important;
+    padding: 0 !important;
+    list-style: none !important;
+}
+.woocommerce-product-gallery .flex-control-nav li {
+    width: 80px !important;
+    float: none !important;
+    margin: 0 !important;
+}
+.woocommerce-product-gallery .flex-control-nav li img {
+    width: 100% !important;
+    height: auto !important;
+    cursor: pointer !important;
+    border: 1px solid #eee !important;
+}
+.woocommerce-product-gallery .flex-control-nav li img.flex-active {
+    border-color: #333 !important;
+}
+
+/* Gallery Navigation Arrows */
+.woocommerce-product-gallery .flex-direction-nav {
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.woocommerce-product-gallery .flex-direction-nav a {
+    width: 44px !important;
+    height: 44px !important;
+    background: #fff !important;
+    color: #111 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    text-decoration: none !important;
+    opacity: 0 !important;
+    transition: all 0.3s ease !important;
+    z-index: 10 !important;
+}
+.woocommerce-product-gallery:hover .flex-direction-nav a {
+    opacity: 1 !important;
+}
+.woocommerce-product-gallery .flex-direction-nav a.flex-prev {
+    left: 20px !important;
+}
+.woocommerce-product-gallery .flex-direction-nav a.flex-next {
+    right: 20px !important;
+}
+.woocommerce-product-gallery .flex-direction-nav a::before {
+    font-family: "Font Awesome 5 Free" !important;
+    font-weight: 900 !important;
+    font-size: 16px !important;
+}
+.woocommerce-product-gallery .flex-direction-nav a.flex-prev::before {
+    content: "\f053" !important;
+}
+.woocommerce-product-gallery .flex-direction-nav a.flex-next::before {
+    content: "\f054" !important;
+}
+
+/* Main Image Scaling Fix */
+.woocommerce-product-gallery__image img {
+    width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    object-fit: contain !important;
+}
+.woocommerce-product-gallery__wrapper {
+    overflow: hidden !important;
+}
+
+@media (max-width: 900px) {
+    .single-product div.product .images,
+    .single-product .woocommerce-product-gallery,
+    .single-product div.product .summary {
+        width: 100% !important;
+        float: none !important;
+        padding-left: 0 !important;
+    }
+}
+
+/* ── Product Title ── */
+.single-product .product_title {
+    font-size: 32px !important;
+    font-weight: 800 !important;
+    color: #1a1a1a !important;
+    margin-bottom: 16px !important;
+    line-height: 1.2 !important;
+    font-family: 'Manrope', sans-serif !important;
+}
+
+/* ── Rating Stars ── */
+.single-product .woocommerce-product-rating {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-bottom: 16px !important;
+}
+.single-product .star-rating {
+    color: #f5a623 !important;
+}
+
+/* ── Flavor Notes Section ── */
+.nv-flavor-notes-wrap {
+    margin-bottom: 24px !important;
+    margin-top: 16px !important;
+}
+.nv-flavor-notes-title {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.2px !important;
+    margin-bottom: 6px !important;
+    text-transform: uppercase !important;
+    color: #999 !important;
+    opacity: 0.8;
+}
+.nv-flavor-notes-content {
+    font-size: 18px !important;
+    color: #1a1a1a !important;
+    text-transform: uppercase !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.5px !important;
+    line-height: 1.3 !important;
+}
+
+/* ── Product Pills (Roast / Country tags) ── */
+.nv-product-pills {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    margin-bottom: 20px !important;
+    margin-top: 10px !important;
+}
+.nv-pill {
+    padding: 8px 16px !important;
+    border-radius: 25px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    text-transform: capitalize !important;
+    letter-spacing: 0.3px !important;
+    border: 1.5px solid rgba(0,0,0,0.12) !important;
+}
+.nv-pill-icon {
+    width: 16px !important;
+    height: 16px !important;
+    margin: 0 !important;
+}
+.nv-pill-roast {
+    background: #f4eee8 !important;
+    color: #8b5a2b !important;
+    border-color: #e0cbb8 !important;
+}
+.nv-pill-country {
+    background: #e8ecee !important;
+    color: #2b6271 !important;
+    border-color: #c5d4d8 !important;
+}
+
+/* ── Price Section ── */
+.single-product .woocommerce-Price-amount {
+    font-size: 28px !important;
+    font-weight: 800 !important;
+    color: #1a1a1a !important;
+    display: inline !important;
+}
+.single-product p.price,
+.single-product .woocommerce-variation-price .price {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+    margin: 12px 0 8px !important;
+    font-size: 28px !important;
+    font-weight: 800 !important;
+    color: #1a1a1a !important;
+}
+.single-product p.price .price-prefix,
+.single-product p.price .fromprice,
+.single-product p.price span.fromprice {
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #888 !important;
+    font-style: italic !important;
+    display: inline-flex !important;
+    align-items: baseline !important;
+}
+
+/* ── Variations Table - Complete Restructure ── */
+.single-product table.variations {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 16px !important;
+    width: 100% !important;
+    border: none !important;
+    border-top: none !important;
+    padding-top: 16px !important;
+    margin-top: 4px !important;
+    margin-bottom: 0 !important;
+}
+.single-product .variations_form,
+.single-product .summary .variations_form,
+.single-product .woocommerce-variation-price,
+.single-product .single_variation_wrap {
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+}
+.single-product table.variations tbody {
+    display: contents !important;
+}
+.single-product table.variations tr {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    min-width: 180px !important;
+}
+.single-product table.variations td {
+    display: block !important;
+    padding: 0 !important;
+    border: none !important;
+}
+.single-product table.variations td.label {
+    margin-bottom: 8px !important;
+}
+.single-product table.variations label {
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.5px !important;
+    color: #999 !important;
+    text-transform: uppercase !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
+}
+.nv-grind-info {
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    text-transform: none !important;
+    color: #aaa !important;
+    cursor: pointer !important;
+    letter-spacing: 0 !important;
+    text-decoration: underline !important;
+}
+
+/* ── HIDE all variation swatches - force dropdowns ── */
+/* Target the specific plugin wrapper classes */
+.single-product .woo-variation-swatches-variable-items-wrapper,
+.single-product .variable-items-wrapper,
+.single-product .woo-variation-items-wrapper,
+.single-product .button-variable-wrapper,
+.single-product .wvs-type-button,
+.single-product .wvs-type-image,
+.single-product .wvs-type-color,
+.single-product .wvs-type-radio {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* ── All variation selects - unified dropdown style ── */
+.single-product .variations select,
+.single-product .variations td.value select {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: static !important;
+    width: 100% !important;
+    height: 48px !important;
+    border: 1.5px solid #e0e0e0 !important;
+    border-radius: 26px !important;
+    padding: 0 40px 0 20px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    font-family: 'Manrope', sans-serif !important;
+    color: #1a1a1a !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    background-color: #fff !important;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 18px center !important;
+    background-size: 16px !important;
+    cursor: pointer !important;
+    transition: border-color 0.2s !important;
+    box-shadow: none !important;
+}
+.single-product .variations select:focus,
+.single-product .variations td.value select:focus {
+    border-color: #1a1a1a !important;
+    outline: none !important;
+    background-color: #fff !important;
+}
+.single-product .variations select:hover,
+.single-product .variations td.value select:hover {
+    border-color: #666 !important;
+}
+
+/* ── Hide reset link ── */
+.single-product .reset_variations {
+    display: none !important;
+}
+
+/* ── QUANTITY section ── */
+.single-product .quantity::before,
+.single-product .quantity::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* ==========================================
+   PDP FORM RESTRUCTURE (Figma Parity)
+   ========================================== */
+
+/* ── Hard Reset for Form Containers ── */
+.single-product .summary form.cart,
+.single-product .woocommerce-variation-add-to-cart,
+.single-product .variations_button,
+.single-product .qib-button-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+}
+
+/* ── Weight Pills (Swatches) ── */
+.single-product .variations tr {
+    display: flex !important;
+    flex-direction: column !important;
+    margin-bottom: 16px !important;
+}
+.single-product .variations td {
+    display: block !important;
+    padding: 0 !important;
+}
+.single-product .variations label {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.2px !important;
+    color: #999 !important;
+    margin-bottom: 10px !important;
+}
+
+/* Hide plugin's native swatch wrappers - JS (.nv-custom-pills) handles display */
+.single-product .variations .variable-items-wrapper,
+.single-product .variations .woo-variation-swatches-variable-items-wrapper {
+    display: none !important;
+}
+
+/* Force show the value td even if plugin hides it - pills live inside here */
+.single-product .variations td.value,
+.single-product .variations td.value.woo-variation-items-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+}
+
+/* Force show the custom pills inside the value td */
+.single-product .variations td.value .nv-custom-pills {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Hide the ":250g" selected-value text span in the label th */
+.single-product .variations .woo-selected-variation-item-name {
+    display: none !important;
+}
+
+.variable-item {
+    border: 1.5px solid #e0e0e0 !important;
+    border-radius: 25px !important;
+    padding: 0 24px !important;
+    height: 48px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    font-weight: 800 !important;
+    font-size: 14px !important;
+    color: #111 !important;
+    background: #fff !important;
+    transition: all 0.2s ease !important;
+    min-width: 90px !important;
+}
+.variable-item.selected,
+.variable-item:hover {
+    background: #111 !important;
+    color: #fff !important;
+    border-color: #111 !important;
+}
+
+/* ── Quantity Section ── */
+.single-product .qib-button-wrapper {
+    margin-bottom: 12px !important;
+    width: auto !important;       /* shrink-wrap to content, not full-width */
+    align-self: flex-start !important;
+}
+
+/* Ensure quantity box is always above action buttons */
+.single-product .woocommerce-variation-add-to-cart,
+.single-product .variations_button {
+    flex-direction: column !important;
+}
+
+/* Quantity row label */
+.single-product .qib-button-wrapper > .nv-qty-label {
+    display: block !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.2px !important;
+    color: #999 !important;
+    margin-bottom: 10px !important;
+}
+
+.single-product .qib-button-wrapper label.screen-reader-text {
+    position: static !important;
+    display: block !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.2px !important;
+    color: #999 !important;
+    margin-bottom: 12px !important;
+}
+
+.nv-quantity-box {
+    display: inline-flex !important;
+    align-items: center !important;
+    border: 1.5px solid #e0e0e0 !important;
+    border-radius: 26px !important;
+    height: 48px !important;
+    overflow: hidden !important;
+    background: #fff !important;
+    width: 140px !important;
+    padding: 0 8px !important;
+}
+
+.nv-quantity-box .qib-button {
+    background: transparent !important;
+    border: none !important;
+    font-size: 20px !important;
+    color: #111 !important;
+    width: 40px !important;
+    height: 100% !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 300 !important;
+}
+
+.nv-quantity-box .quantity {
+    width: 50px !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.nv-quantity-box .quantity input.qty {
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+    background: transparent !important;
+    text-align: center !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    color: #111 !important;
+    padding: 0 !important;
+}
+
+
+/* ── Action Buttons Row ── */
+.nv-actions-row {
+    display: flex !important;
+    flex-direction: row !important;
+    width: 100% !important;
+    gap: 12px !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+/* ── Custom Weight Pills ── */
+.nv-custom-pills {
+    display: flex !important;
+    gap: 12px !important;
+    padding: 0 !important;
+    list-style: none !important;
+    margin: 0 !important;
+    flex-wrap: wrap !important;
+}
+
+.nv-pill-item {
+    border: 1.5px solid #e0e0e0 !important;
+    border-radius: 25px !important;
+    padding: 0 24px !important;
+    height: 48px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    font-weight: 800 !important;
+    font-size: 14px !important;
+    color: #111 !important;
+    background: #fff !important;
+    transition: all 0.2s ease !important;
+    min-width: 90px !important;
+    text-transform: uppercase !important;
+}
+
+.nv-pill-item.selected {
+    background: #111 !important;
+    color: #fff !important;
+    border-color: #111 !important;
+}
+
+.nv-pill-item:hover:not(.selected) {
+    border-color: #111 !important;
+}
+
+/* ── BUY NOW button ── */
+.nv-buy-now-btn {
+    background: #111 !important;
+    color: #fff !important;
+    border: 2px solid #111 !important;
+    border-radius: 8px !important;
+    height: 50px !important;
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+    cursor: pointer !important;
+    flex: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background 0.2s ease, color 0.2s ease !important;
+}
+.nv-buy-now-btn:hover {
+    background: #333 !important;
+    border-color: #333 !important;
+}
+
+/* ── ADD TO CART button ── */
+.single-product .single_add_to_cart_button {
+    background: #fff !important;
+    color: #fff !important;     /* hide native text by making it white on white */
+    border: 1.5px solid #111 !important;
+    border-radius: 8px !important;
+    height: 50px !important;
+    font-size: 0 !important;
+    font-weight: 800 !important;
+    flex: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: background 0.2s ease, border-color 0.2s ease !important;
+    position: relative !important;
+}
+.single-product .single_add_to_cart_button::after {
+    content: "ADD TO CART";
+    display: block !important;
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+    color: #111 !important;
+    font-family: 'Manrope', sans-serif !important;
+    transition: color 0.2s ease !important;
+}
+.single-product .single_add_to_cart_button:hover,
+.single-product .single_add_to_cart_button:hover:not(:disabled) {
+    background: #111 !important;
+    border-color: #111 !important;
+}
+.single-product .single_add_to_cart_button:hover::after {
+    color: #fff !important;
+}
+/* Disabled / out-of-stock state */
+.single-product .single_add_to_cart_button:disabled,
+.single-product .single_add_to_cart_button.disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+}
+
+
+
+
+/* ── Hide Original Sharing Items (Keep container for JS injection) ── */
+.w-sharing-list, .us-sharing-list, .addtoany_share_save_container {
+    display: none !important;
+}
+
+/* ── Title Share Icon ── */
+.nv-share-icon {
+    display: inline-flex !important;
+    cursor: pointer !important;
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 50% !important;
+    background: #f4f5f9 !important;
+    border: 1px solid #eee !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+.nv-share-icon svg {
+    width: 18px !important;
+    height: 18px !important;
+    stroke: #111 !important;
+}
+
+/* ── Hide Extra Grind Info physically ── */
+.summary .w-popup-trigger[class*="grind"]:not(.nv-relocated-grind),
+.summary a[href*="grind"]:not(.nv-relocated-grind), 
+.summary .grind-info, 
+.summary .know-grind {
+    display: none !important;
+}
+
+/* ── Relocated Grind Button Styling ── */
+.nv-relocated-grind {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+
+
+/* ── Grind Size Info Link (JS injected) ── */
+.nv-grind-info {
+    display: inline-flex !important;
+    cursor: pointer !important;
+    text-decoration: underline !important;
+    font-size: 11px !important;
+    margin-left: 10px !important;
+    font-weight: 400 !important;
+    color: #999 !important;
+    vertical-align: baseline !important;
+}
+
+
+
+
+/* Ensure buttons take equal space below */
+.single-product .single_add_to_cart_button,
+.single-product .nv-buy-now-btn {
+    flex: 1 !important;
+    margin: 0 !important;
+}
+
+/* ── Compact variation price & stock row ── */
+.single-product .single_variation_wrap {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+.single-product .woocommerce-variation-price {
+    margin: 0 0 10px 0 !important;
+    padding: 0 !important;
+}
+.single-product .woocommerce-variation-price .price {
+    margin: 8px 0 !important;
+    font-size: 22px !important;
+}
+.single-product p.stock.out-of-stock,
+.single-product p.stock.in-stock {
+    margin: 0 0 8px 0 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+}
+
+/* Fix for Know About Grind Size popup trigger */
+.nv-grind-info {
+    cursor: pointer !important;
+    color: #1a1a1a !important;
+    text-decoration: underline !important;
+    font-size: 12px !important;
+    margin-left: 10px !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+.nv-grind-info:hover {
+    color: #444 !important;
+}
+
+
+/* ── Sticky CTA Bar ── */
+.nv-sticky-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    box-shadow: 0 -5px 25px rgba(0,0,0,0.08);
+    padding: 12px 0;
+    z-index: 9999;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.nv-sticky-bar.visible {
+    transform: translateY(0);
+}
+.nv-sticky-bar-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.nv-sticky-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.nv-sticky-info img {
+    width: 50px;
+    height: 50px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid #eee;
+}
+.nv-sticky-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.2;
+}
+.nv-sticky-price {
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+}
+.nv-sticky-buy-btn {
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 24px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+}
+
+/* ── Sticky WhatsApp ── */
+.nv-sticky-whatsapp {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: #25d366;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 10000;
+    transition: transform 0.3s;
+    animation: nv-wa-pulse 2s infinite;
+    text-decoration: none !important;
+}
+.nv-sticky-whatsapp:hover {
+    transform: scale(1.1);
+}
+.nv-sticky-whatsapp img,
+.nv-sticky-whatsapp svg {
+    width: 34px;
+    height: 34px;
+    fill: #fff;
+}
+
+/* ── WhatsApp Pulse Animation ── */
+@keyframes nv-wa-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+
+/* Hide Sticky Bar elements on mobile */
+@media (max-width: 480px) {
+    .nv-sticky-info { display: none; }
+    .nv-sticky-actions { width: 100%; }
+    .nv-sticky-buy-btn { width: 100%; }
+}
+
+/* ── Flavor Characteristics (Charts) ── */
+.flavor-charcter-wrap {
+    margin-top: 60px !important;
+    padding-top: 40px !important;
+    border-top: 1px solid #eee !important;
+}
+.flavor-charcter-title {
+    font-size: 32px !important;
+    font-weight: 800 !important;
+    color: #1a1a1a !important;
+    margin-bottom: 40px !important;
+    text-align: left !important;
+}
+.flavor-charcter {
+    display: flex !important;
+    justify-content: space-between !important;
+    gap: 20px !important;
+    flex-wrap: wrap !important;
+}
+.flavor-charcter .w-pie-chart,
+.flavor-charcter .vc_pie_chart {
+    width: 120px !important;
+    height: 120px !important;
+    margin: 0 auto !important;
+}
+.flavor-charcter .w-pie-chart-title,
+.flavor-charcter .vc_pie_chart_title {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    margin-top: 15px !important;
+    color: #333 !important;
+}
+
+/* ── About The Farm Section ── */
+.about-farm-wrap {
+    background: #f9f9f9 !important;
+    padding: 80px 0 !important;
+    margin-top: 80px !important;
+}
+.about-farm-title {
+    font-size: 32px !important;
+    font-weight: 800 !important;
+    margin-bottom: 24px !important;
+}
+
+/* ── Sidebar Cart UI Refinements ── */
+/* 1. Compress top and bottom padding of cart */
+body .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-header-wrap {
+    padding: 12px 20px !important;
+    min-height: 0 !important;
+    height: auto !important;
+}
+body .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-footer-wrap {
+    padding-top: 10px !important;
+    padding-bottom: 0 !important;
+}
+body .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-footer {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+}
+body .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-footer-action {
+    padding: 0 20px 10px !important;
+    margin-bottom: 0 !important;
+}
+body .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-header-title-wrap,
+body .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-header-title-wrap * {
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+body .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-footer-message-wrap,
+body .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-footer-message-wrap * {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+body .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-products {
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+}
+
+/* Force compact layout with body specificity */
+body .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-pd-wrap {
+    padding: 12px 20px !important;
+    gap: 12px !important;
+}
+body .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-pd-img-wrap {
+    width: 64px !important;
+    min-width: 64px !important;
+    height: 64px !important;
+}
+body .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-pd-info-wrap {
+    gap: 4px !important;
+}
+body .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-pd-price {
+    top: 12px !important;
+}
+body .vi-wcaio-sidebar-cart .vi-wcaio-sidebar-cart-products-wrap::before {
+    padding: 8px 20px !important;
+}
+
+/* 2. Make weight/filter dropdowns slimmer and rounder */
+body .vi-wcaio-sidebar-cart-pd-wrap select,
+body .vi-wcaio-sidebar-cart-pd-meta select {
+    padding: 2px 20px 2px 8px !important; /* Extra right padding for native arrow */
+    border-radius: 6px !important;
+    font-size: 11px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    line-height: normal !important;
+    box-sizing: border-box !important;
+    background-color: #f8f8f8 !important;
+    border: 1px solid #eee !important;
+    margin-top: 4px !important;
+    font-weight: 600 !important;
+}
+
+/* Fix product price font in the cart (overrides global .single-product rules) */
+body .vi-wcaio-sidebar-cart-pd-price,
+body .vi-wcaio-sidebar-cart-pd-price .amount,
+body .vi-wcaio-sidebar-cart-pd-price .woocommerce-Price-amount {
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    color: #1a1a1a !important;
+    display: inline-block !important;
+}
+
+/* 3. Best Selling Products (Upsells) Layout & Font Sizes */
+body .vi-wcaio-sidebar-cart-footer-pd-wrap {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 15px !important;
+    padding-bottom: 5px !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+body .vi-wcaio-sidebar-cart-footer-pd {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    padding: 10px !important;
+    position: relative !important;
+    border: 1px solid #eee !important;
+    margin-bottom: 5px !important;
+    border-radius: 8px !important;
+    height: auto !important;
+    min-height: 70px !important;
+    overflow: visible !important;
+    flex: 0 0 250px !important; /* Fixed width to prevent squeezing */
+    min-width: 250px !important;
+}
+body .vi-wcaio-sidebar-cart-footer-pd-desc-wrap {
+    display: flex !important;
+    align-items: center !important;
+    flex: 1 !important;
+    padding-right: 35px !important; /* Leave room for absolute positioned plus button */
+    gap: 10px !important;
+}
+body .vi-wcaio-sidebar-cart-footer-pd-desc {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    min-width: 0 !important; /* allow text to truncate */
+}
+body .vi-wcaio-sidebar-cart-footer-pd-name {
+    margin: 0 0 2px 0 !important;
+    padding: 0 !important;
+    line-height: 1.2 !important;
+    font-size: 11px !important;
+}
+body .vi-wcaio-sidebar-cart-footer-pd-name a {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: normal !important;
+}
+/* Reduce price font size in upsells */
+body .vi-wcaio-sidebar-cart-footer-pd-price,
+body .vi-wcaio-sidebar-cart-footer-pd-price .amount,
+body .vi-wcaio-sidebar-cart-footer-pd-price .woocommerce-Price-amount {
+    font-size: 14px !important;
+    font-weight: 800 !important;
+}
+/* Ensure the Plus (+) button stays correctly aligned on the card */
+body .vi-wcaio-sidebar-cart-footer-pd-control {
+    position: absolute !important;
+    right: 15px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    margin: 0 !important;
+    width: 24px !important;
+    height: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 10 !important;
+}
+
+/* 4. Reduce subtotal price font */
+body .vi-wcaio-sidebar-cart-footer-subtotal .vi-wcaio-sidebar-cart-footer-cart_total1,
+body .vi-wcaio-sidebar-cart-footer-subtotal .amount,
+body .vi-wcaio-sidebar-cart-footer-subtotal .woocommerce-Price-amount {
+    font-size: 18px !important;
+    font-weight: 800 !important;
+}
+
+/* ══════════════════════════════════════════════════
+   QUICK VIEW MODAL — Figma Exact
+   ══════════════════════════════════════════════════ */
+
+/* ── Overlay ── */
+#nv-qv-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 999998;
+}
+
+/* ── Modal Card ── */
+#nv-qv-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 95%;
+    max-width: 1080px;
+    max-height: 92vh;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.18);
+    z-index: 999999;
+    overflow: hidden;
+    font-family: 'Manrope', sans-serif;
+}
+#nv-qv-body {
+    width: 100% !important;
+    display: block !important;
+    box-sizing: border-box !important;
+}
+
+/* ── Close Button ── */
+#nv-qv-close {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f4f5f9;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: background 0.2s, transform 0.2s;
+}
+#nv-qv-close:hover {
+    background: #e9ecef;
+    transform: scale(1.1);
+}
+
+/* ── Loading Spinner ── */
+.nv-qv-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+}
+.nv-qv-loading span {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e0e0e0;
+    border-top-color: #111;
+    border-radius: 50%;
+    animation: nv-spin 0.7s linear infinite;
+    display: block;
+}
+
+/* ── Two-Column Layout ── */
+.nv-qv-layout {
+    display: flex;
+    gap: 0;
+    min-height: 0;
+    align-items: stretch;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* ── Gallery Column ── */
+.nv-qv-gallery-col {
+    flex: 0 0 42%;
+    background: #FAF5F0 !important; /* Seamless warm background matching card image container */
+    border-radius: 20px 0 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 0 !important; /* Remove padding so image fits entirely */
+    min-height: 0;
+    overflow: hidden !important; /* Ensure image respects border radius */
+}
+.nv-qv-img-wrap {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#nv-qv-main-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important; /* Contain to prevent cropping of coffee bags */
+    display: block;
+    transition: opacity 0.2s;
+}
+
+/* Gallery Arrows */
+.nv-qv-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #fff;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    color: #333;
+    transition: background 0.2s, box-shadow 0.2s;
+    z-index: 2;
+}
+.nv-qv-arrow:hover { background: #f4f5f9; box-shadow: 0 4px 14px rgba(0,0,0,0.16); }
+.nv-qv-prev { left: 14px; }
+.nv-qv-next { right: 14px; }
+
+/* ── Info Column ── */
+.nv-qv-info-col {
+    flex: 1;
+    padding: 22px 30px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow-y: auto;
+}
+
+/* ── Product Title ── */
+.nv-qv-title {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: #1a1a1a !important;
+    margin: 0 0 8px !important;
+    line-height: 1.2 !important;
+    font-family: 'Manrope', sans-serif !important;
+    padding-right: 40px;
+}
+
+/* ── Flavour Notes ── */
+.nv-qv-flavor { margin-bottom: 8px; }
+.nv-qv-flavor-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+    color: #999;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+.nv-qv-flavor-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ── Attribute Pills Row ── */
+.nv-qv-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+.nv-qv-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1.5px solid rgba(0,0,0,0.1);
+    line-height: 1;
+}
+.nv-qv-pill-icon {
+    width: 14px !important;
+    height: 14px !important;
+    margin: 0 !important;
+    display: inline-block !important;
+    box-shadow: none !important;
+}
+.nv-qv-pill-roast { background: #f4eee8; color: #8b5a2b; border-color: #e0cbb8; }
+.nv-qv-pill-country { background: #e8ecee; color: #2b6271; border-color: #c5d4d8; }
+
+/* ── Price Row ── */
+.nv-qv-price-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+#nv-qv-price {
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    color: #1a1a1a !important;
+}
+#nv-qv-price .woocommerce-Price-amount,
+#nv-qv-price .amount { font-size: 26px !important; font-weight: 800 !important; color: #1a1a1a !important; }
+.nv-qv-grind-link {
+    font-size: 11px !important;
+    color: #999 !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+    font-weight: 500 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    cursor: pointer !important;
+}
+.nv-qv-grind-link:hover { color: #555 !important; }
+
+/* ── Divider ── */
+.nv-qv-hr {
+    border: none;
+    border-top: 1px solid #ebebeb;
+    margin: 8px 0;
+}
+
+/* ── 3-Column Controls ── */
+.nv-qv-controls {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    margin-bottom: 2px;
+}
+.nv-qv-control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+}
+.nv-qv-ctrl-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    color: #999;
+    text-transform: uppercase;
+}
+
+/* Weight pills */
+.nv-qv-weight-pills { display: flex; gap: 6px; flex-wrap: nowrap; }
+.nv-qv-weight-pill {
+    box-sizing: border-box !important;
+    border: 1.5px solid #e0e0e0 !important;
+    border-radius: 22px !important;
+    padding: 0 14px !important;
+    height: 44px !important;
+    background: #fff !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    color: #111 !important;
+    cursor: pointer !important;
+    transition: all 0.18s ease !important;
+    font-family: 'Manrope', sans-serif !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+}
+.nv-qv-weight-pill:hover { border-color: #111 !important; }
+.nv-qv-weight-pill.nv-qv-weight-selected {
+    background: #111 !important;
+    color: #fff !important;
+    border-color: #111 !important;
+}
+
+/* Filter dropdown */
+.nv-qv-select-wrap { position: relative; }
+.nv-qv-select-wrap select,
+#nv-qv-filter {
+    box-sizing: border-box !important;
+    height: 44px !important;
+    line-height: 44px !important;
+    border: 1.5px solid #e0e0e0 !important;
+    border-radius: 22px !important;
+    padding: 0 32px 0 14px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    font-family: 'Manrope', sans-serif !important;
+    color: #1a1a1a !important;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center / 13px !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    cursor: pointer !important;
+    outline: none !important;
+    width: 100% !important;
+    min-width: 120px !important;
+    transition: border-color 0.2s !important;
+    text-transform: uppercase !important;
+}
+#nv-qv-filter:focus { border-color: #333 !important; }
+
+/* Quantity stepper */
+.nv-qv-qty-wrap {
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    border: 1.5px solid #e0e0e0 !important;
+    border-radius: 22px !important;
+    height: 44px !important;
+    overflow: hidden !important;
+    background: #fff !important;
+    width: 100% !important;
+}
+.nv-qv-qty-btn {
+    width: 44px !important;
+    height: 100% !important;
+    background: transparent !important;
+    border: none !important;
+    font-size: 18px !important;
+    font-weight: 400 !important;
+    color: #111 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background 0.15s !important;
+    flex-shrink: 0 !important;
+}
+.nv-qv-qty-btn:hover { background: #f4f4f4 !important; }
+#nv-qv-qty {
+    flex: 1 !important;
+    width: auto !important;
+    text-align: center !important;
+    padding: 0 !important; /* Remove any theme or browser padding */
+    text-indent: 0 !important; /* Remove text indentation */
+    border: none !important;
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    color: #111 !important;
+    background: transparent !important;
+    font-family: 'Manrope', sans-serif !important;
+    -moz-appearance: textfield !important;
+    outline: none !important;
+}
+#nv-qv-qty::-webkit-inner-spin-button,
+#nv-qv-qty::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+/* ── ADD TO CART Button ── */
+.nv-qv-atc-btn {
+    width: 100%;
+    height: 46px;
+    background: #fff;
+    color: #111;
+    border: 1.5px solid #111;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    transition: background 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+}
+.nv-qv-atc-btn:hover, .nv-qv-atc-btn.nv-qv-adding {
+    background: #111;
+    color: #fff;
+}
+
+/* ── BUY NOW Button ── */
+.nv-qv-buy-btn {
+    width: 100%;
+    height: 46px;
+    background: #111;
+    color: #fff !important;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    text-decoration: none !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+    transition: background 0.2s;
+}
+.nv-qv-buy-btn:hover { background: #333; color: #fff !important; }
+.nv-qv-paytm-logo {
+    height: 22px !important;
+    width: auto !important;
+    vertical-align: middle;
+    margin: 0 !important;
+    box-shadow: none !important;
+    display: inline-block !important;
+    filter: brightness(0) invert(1);
+}
+
+/* ── Payments Secured Badge ── */
+.nv-qv-secure {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #888;
+    margin-top: 7px;
+    font-family: 'Manrope', sans-serif;
+}
+.nv-qv-razorpay-logo {
+    height: 18px !important;
+    width: auto !important;
+    vertical-align: middle;
+    margin: 0 !important;
+    box-shadow: none !important;
+}
+
+/* ── Pincode Checker ── */
+.nv-qv-pincode-wrap {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+}
+.nv-qv-pincode-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #444;
+    margin: 0 0 5px;
+    font-family: 'Manrope', sans-serif;
+}
+.nv-qv-pincode-row {
+    display: flex;
+    gap: 0;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+#nv-qv-pincode {
+    flex: 1;
+    border: none;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-family: 'Manrope', sans-serif;
+    color: #333;
+    outline: none;
+    background: #fff;
+}
+#nv-qv-pincode::placeholder { color: #bbb; }
+#nv-qv-pin-check {
+    background: #fff;
+    border: none;
+    border-left: 1.5px solid #e0e0e0;
+    padding: 10px 18px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    color: #111;
+    transition: background 0.15s;
+}
+#nv-qv-pin-check:hover { background: #f4f4f4; }
+#nv-qv-pin-result { margin-top: 6px; min-height: 16px; }
+
+/* ── Prevent body scroll when modal open ── */
+body.nv-qv-open { overflow: hidden !important; }
+
+/* ── Mobile Redesign — Premium Centered Modal Overlay ── */
+@media (max-width: 768px) {
+    #nv-qv-modal {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important; /* Perfect horizontal and vertical centering */
+        width: 92% !important; /* 90-95% of viewport width */
+        max-width: 480px !important; /* Appropriate max-width for mobile screens */
+        height: auto !important;
+        max-height: 90vh !important; /* Fits comfortably within the viewport */
+        border-radius: 20px !important; /* Rounded corners consistent with Naivo design */
+        background: #fff !important;
+        box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2) !important;
+        overflow: hidden !important; /* Lock modal card scroll, scroll only body */
+        display: flex !important;
+        flex-direction: column !important;
+        z-index: 999999 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+        animation: nv-fade-scale 0.25s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+    }
+    
+    #nv-qv-body {
+        width: 100% !important;
+        height: auto !important;
+        max-height: calc(90vh - 20px) !important; /* Subtract small safe margin */
+        overflow-y: auto !important; /* Long content scrolls inside body */
+        display: block !important;
+        box-sizing: border-box !important;
+        padding-bottom: env(safe-area-inset-bottom, 24px) !important;
+    }
+    
+    .nv-qv-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        min-height: auto !important;
+        gap: 0 !important;
+    }
+    
+    .nv-qv-gallery-col {
+        flex: none !important;
+        width: 100% !important;
+        height: 280px !important; /* Scale correctly and keep readable */
+        padding: 0 !important;
+        overflow: hidden !important;
+        border-radius: 20px 20px 0 0 !important; /* Match top corners */
+        background: #FAF5F0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: relative !important;
+    }
+    
+    .nv-qv-img-wrap {
+        width: 100% !important;
+        height: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    #nv-qv-main-img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important; /* Lossless contain to prevent cropping and distortion */
+        background: #FAF5F0 !important;
+    }
+    
+    .nv-qv-info-col {
+        flex: none !important;
+        width: 100% !important;
+        padding: 24px 20px !important; /* Proper padding on all sides */
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow-y: visible !important; /* Scroll handled by body */
+    }
+    
+    .nv-qv-controls {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 14px !important;
+        width: 100% !important;
+    }
+    
+    .nv-qv-control-group {
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        margin-bottom: 12px !important;
+        flex: none !important; /* Prevent desktop flex constraints from leaking */
+    }
+    
+    .nv-qv-title {
+        font-size: 20px !important;
+        line-height: 1.3 !important;
+        font-weight: 800 !important;
+        margin-bottom: 8px !important;
+    }
+    
+    #nv-qv-close {
+        position: absolute !important;
+        top: 16px !important;
+        right: 16px !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18) !important;
+        color: #111 !important;
+        z-index: 999999 !important;
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border: 1px solid rgba(0, 0, 0, 0.05) !important;
+        font-size: 22px !important;
+        cursor: pointer !important;
+        transition: transform 0.2s, background 0.2s !important;
+    }
+    
+    /* Touch optimization adjustments */
+    .nv-qv-weight-pills {
+        display: flex !important;
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+        width: 100% !important;
+    }
+    
+    .nv-qv-weight-pill {
+        flex: 1 !important;
+        justify-content: center !important;
+        min-width: 60px !important;
+    }
+
+    /* Stacked Full Width CTAs */
+    .nv-qv-atc-btn,
+    .nv-qv-buy-btn {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        flex: none !important;
+    }
+}
+
+@keyframes nv-fade-scale {
+    from { opacity: 0; transform: translate(-50%, -45%) scale(0.96); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Button Loading State for the "Buy Now" card button */
+.nv-quick-view-btn.nv-qv-loading-state {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* ── Promotional Banners ── */
+
+.nv-promo-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 30px 20px 0;
+    font-family: 'Manrope', sans-serif;
+}
+.nv-promo-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #111;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.5px;
+}
+.nv-promo-subtitle {
+    display: inline-flex;
+    align-items: center;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 25px;
+    font-weight: 500;
+}
+.nv-promo-divider {
+    border: none;
+    border-top: 1px solid #eaeaea;
+    margin: 0;
+}
+.nv-promo-features {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 0;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+.nv-promo-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.nv-promo-item img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+}
+.nv-promo-item span {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: #333;
+    text-transform: uppercase;
+}
+.nv-promo-sparkle {
+    width: 16px;
+    height: 16px;
+}
+
+@media (max-width: 900px) {
+    .nv-promo-features {
+        justify-content: center;
+        gap: 20px;
+    }
+    .nv-promo-sparkle {
+        display: none; /* Hide sparkles on smaller screens where items wrap */
+    }
+}
+@media (max-width: 600px) {
+    .nv-promo-title { font-size: 26px; }
+    .nv-promo-item { width: 100%; justify-content: center; }
+}
+
+/* ── Wholesale Section Fixes ── */
+/* ── Wholesale Section Fixes ── */
+#wholesaleform .vc_col-sm-4.has_bg_color .vc_column-inner {
+    padding-bottom: 350px !important;
+    background-size: 80% auto !important; /* Forces the image to not be too wide */
+    background-position: center bottom !important;
+    background-repeat: no-repeat !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Aligns text to top */
+    min-height: 600px; /* Give enough height for both text and image */
+    width: 100%;
+}
+
+#wholesaleform .vc_col-sm-4.has_bg_color .wpb_wrapper {
+    background: transparent !important; /* Removed white backing since it won't overlap */
+    padding: 0 10px !important;
+    margin-top: 0;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+#wholesaleform .vc_col-sm-4.has_bg_color h2 {
+    text-align: center !important;
+    font-family: 'Satoshi', sans-serif !important;
+    font-size: 28px !important; /* Smaller size to keep 'Solutions to Transform' within width */
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    color: #111 !important;
+    margin: 0 auto !important;
+    max-width: 90%;
+}
+
+/* Right side form padding fix */
+#wholesaleform .vc_col-sm-8 .vc_column-inner {
+    padding: 20px 40px !important;
+}
+
+@media (max-width: 768px) {
+    #wholesaleform .vc_col-sm-4.has_bg_color .vc_column-inner {
+        min-height: 450px;
+        padding-bottom: 280px !important;
+        background-size: 70% auto !important;
+    }
+    #wholesaleform .vc_col-sm-4.has_bg_color h2 {
+        font-size: 24px !important;
+    }
+    #wholesaleform .vc_col-sm-8 .vc_column-inner {
+        padding: 20px 15px !important;
+    }
+}
+
+/* ==========================================
+   BLOG HERO META FIX
+   ========================================== */
+.wpb_wrapper > .w-post-elm.post_author,
+.wpb_wrapper > .w-post-elm.post_date {
+    display: inline-flex !important;
+    align-items: flex-start;
+    position: static !important;
+    vertical-align: top;
+}
+
+.wpb_wrapper > .w-post-elm.post_author {
+    margin-right: 15px !important;
+}
+
+.wpb_wrapper > .w-post-elm.post_date {
+    margin-top: 0 !important;
+}
+
+.wpb_wrapper > .w-post-elm.post_date .w-post-elm-before {
+    margin-right: 5px !important;
+}
+
+/* ==========================================
+   SINGLE PRODUCT GALLERY EDGE-TO-EDGE
+   ========================================== */
+.sing_product .w-post-elm.product_gallery {
+    margin-left: -1.5rem !important;
+    margin-right: -1.5rem !important;
+}
+
+/* Clean up any potential double-border radius or overflowing background */
+.sing_product .w-post-elm.product_gallery .woocommerce-product-gallery {
+    border-radius: 12px;
+    overflow: hidden;
+    background: transparent;
 }
