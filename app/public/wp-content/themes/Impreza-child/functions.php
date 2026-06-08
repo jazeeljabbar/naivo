@@ -580,13 +580,13 @@ function naivo_home_hero_fit_width_css() {
                 top: 50%;
                 left: clamp(24px, 7vw, 96px);
                 transform: translateY(-50%);
-                max-width: 390px;
+                max-width: 600px;
                 pointer-events: auto;
             }
             .home .nv-home-hero-overlay h1 {
                 margin: 0 0 16px;
                 color: #1f1a16;
-                font-size: clamp(38px, 4.8vw, 68px);
+                font-size: clamp(32px, 4.2vw, 56px);
                 line-height: 1.05;
                 font-weight: 800;
                 letter-spacing: 0;

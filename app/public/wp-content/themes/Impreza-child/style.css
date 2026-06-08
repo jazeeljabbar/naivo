@@ -1969,3 +1969,23 @@ a.added_to_cart{display:none;}
     flex-wrap: wrap !important;
     align-items: center !important;
 }
+
+/* Fix the white gap below the header on the homepage caused by the Easy Notification Bar plugin */
+html.has-easy-notification-bar body.home .l-main > .l-section#For-Desktop,
+html.has-easy-notification-bar body.home .l-main > .l-section#For-Mobile {
+    margin-top: -45px !important;
+}
+
+/* Ensure mobile slider image fits the screen without being cropped on the sides */
+#n2-ss-3, #n2-ss-3 .n2-ss-slider-1, #n2-ss-3 .n2-ss-slider-2, #n2-ss-3 .n2-ss-slider-3 {
+    min-height: 0 !important;
+}
+#n2-ss-3 .n2-ss-slide-background-image img {
+    object-fit: contain !important;
+    width: 100% !important;
+    height: 100% !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+    background-color: #eaddd3;
+}

@@ -8,10 +8,9 @@ defined( 'ABSPATH' ) || exit;
 get_header( 'shop' );
 
 ?>
-<div class="nv-shop-ticker">
-    Take <a href="#">our quiz</a> and find your match
-    <button class="nv-ticker-close" aria-label="Close">&times;</button>
-</div>
+<main id="page-content" class="l-main">
+
+
 
 <section class="nv-shop-favorites-hero" aria-label="The World’s Favourite Coffees">
     <div class="nv-shop-favorites-inner">
@@ -179,6 +178,7 @@ get_header( 'shop' );
     </div>
 
 </div>
+</main>
 <?php
 get_footer( 'shop' );
 ?>

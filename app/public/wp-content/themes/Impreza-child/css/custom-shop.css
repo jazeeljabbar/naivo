@@ -142,7 +142,7 @@ html, body {
 .nv-shop-favorites-inner {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 58px 45px 48px;
+    padding: 158px 45px 48px;
 }
 
 .nv-shop-favorites-inner h1 {
@@ -1021,7 +1021,7 @@ div.nv-product-card::before, div.nv-product-card::after {
     }
 
     .nv-shop-favorites-inner {
-        padding: 28px 16px 24px;
+        padding: 88px 16px 24px;
     }
     .nv-shop-favorites-inner h1 {
         font-size: 26px;
@@ -1350,7 +1350,7 @@ div.nv-product-card::before, div.nv-product-card::after {
         font-size: 23px;
     }
     .nv-shop-favorites-inner {
-        padding: 24px 14px 20px;
+        padding: 84px 14px 20px;
     }
     .nv-shop-favorites-location {
         margin-bottom: 14px;
@@ -5153,3 +5153,5 @@ body.nv-qv-open { overflow: hidden !important; }
     overflow: hidden;
     background: transparent;
 }
+
+
