@@ -12,17 +12,12 @@ get_header( 'shop' );
 
 
 
-<section class="nv-shop-favorites-hero" aria-label="The World’s Favourite Coffees">
-    <div class="nv-shop-favorites-inner">
-        <h1>The World’s Favourite Coffees</h1>
-        <p class="nv-shop-favorites-location">
-            <img src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/08/location.png' ) ); ?>" alt="" width="24" height="25">
-            <span>Crafted in India</span>
-        </p>
-    </div>
-</section>
+<?php echo do_shortcode('[vc_row css="%7B%22mobiles%22%3A%7B%22padding-top%22%3A%2250px%22%2C%22padding-bottom%22%3A%2250px%22%7D%7D" el_class="icon-carousel"][vc_column][vc_custom_heading text="The World’s Favourite Coffees" font_container="tag:h1|text_align:center" use_theme_fonts="yes" css="%7B%22default%22%3A%7B%22color%22%3A%22%23151516%22%2C%22text-align%22%3A%22center%22%2C%22font-size%22%3A%2244px%22%2C%22line-height%22%3A%2260.1px%22%2C%22font-weight%22%3A%22700%22%7D%2C%22laptops%22%3A%7B%22color%22%3A%22%23151516%22%2C%22text-align%22%3A%22center%22%2C%22font-size%22%3A%2244px%22%2C%22line-height%22%3A%2260.1px%22%2C%22font-weight%22%3A%22700%22%7D%2C%22tablets%22%3A%7B%22color%22%3A%22%23151516%22%2C%22text-align%22%3A%22center%22%2C%22font-size%22%3A%2244px%22%2C%22line-height%22%3A%2260.1px%22%2C%22font-weight%22%3A%22700%22%7D%2C%22mobiles%22%3A%7B%22color%22%3A%22%23151516%22%2C%22text-align%22%3A%22center%22%2C%22font-size%22%3A%2235px%22%2C%22line-height%22%3A%2245.1px%22%2C%22font-weight%22%3A%22700%22%7D%7D"][vc_column_text css="%7B%22default%22%3A%7B%22color%22%3A%22%23494A4B%22%7D%7D" el_class="icon-location"]<p style="text-align: center;"><img class="alignnone size-full wp-image-134" src="' . esc_url( home_url( '/wp-content/uploads/2024/08/location.png' ) ) . '" alt="" width="24" height="25" />Crafted in India</p>[/vc_column_text][us_separator size="custom" height="30px"][vc_row_inner content_placement="middle" css="%7B%22default%22%3A%7B%22margin-top%22%3A%2250px%22%2C%22padding-top%22%3A%2220px%22%2C%22padding-bottom%22%3A%2220px%22%2C%22border-style%22%3A%22solid%22%2C%22border-top-width%22%3A%221px%22%2C%22border-bottom-width%22%3A%221px%22%2C%22border-color%22%3A%22%23E4E4E4%22%7D%7D"][vc_column_inner][us_carousel post_type="home_icon_carousal" items_layout="219" columns="4" carousel_loop="1" carousel_speed="700ms" el_class="star_icon"][/vc_column_inner][/vc_row_inner][/vc_column][/vc_row]'); ?>
 
-<div class="nv-shop-container">
+
+<section class="l-section wpb_row height_medium custom-shop-section">
+    <div class="l-section-h i-cf">
+        <div class="nv-shop-container">
 
     <!-- Top Categories -->
     <div class="nv-categories-strip">
@@ -178,6 +173,8 @@ get_header( 'shop' );
     </div>
 
 </div>
+</div>
+</section>
 </main>
 <?php
 get_footer( 'shop' );

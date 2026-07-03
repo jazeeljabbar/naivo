@@ -189,10 +189,10 @@
             if ($emailRow.length) {
                 $contactHeader.after($emailRow.detach());
 
-                // Add "Receive instant updates by email" checkbox after email
+                // Add "Keep me updated on new coffee releases and limited lots" checkbox after email
                 if (!$left.find('.nv-email-updates').length) {
                     var $updatesCheck = $('<p class="nv-email-updates">' +
-                        '<label><input type="checkbox" checked /> Receive instant updates by email</label>' +
+                        '<label><input type="checkbox" checked /> Keep me updated on new coffee releases and limited lots</label>' +
                         '</p>');
                     $emailRow.after($updatesCheck);
                 }
@@ -438,6 +438,94 @@
                 $btn.text('APPLY');
             }
         });
+    });
+
+    /* ─── State Auto-population by Pincode ─── */
+    var nvStateMap = {
+        "Andhra Pradesh": "AP",
+        "Arunachal Pradesh": "AR",
+        "Assam": "AS",
+        "Bihar": "BR",
+        "Chhattisgarh": "CT",
+        "Goa": "GA",
+        "Gujarat": "GJ",
+        "Haryana": "HR",
+        "Himachal Pradesh": "HP",
+        "Jharkhand": "JH",
+        "Karnataka": "KA",
+        "Kerala": "KL",
+        "Madhya Pradesh": "MP",
+        "Maharashtra": "MH",
+        "Manipur": "MN",
+        "Meghalaya": "ML",
+        "Mizoram": "MZ",
+        "Nagaland": "NL",
+        "Odisha": "OR",
+        "Punjab": "PB",
+        "Rajasthan": "RJ",
+        "Sikkim": "SK",
+        "Tamil Nadu": "TN",
+        "Telangana": "TS",
+        "Tripura": "TR",
+        "Uttar Pradesh": "UP",
+        "Uttarakhand": "UK",
+        "West Bengal": "WB",
+        "Andaman and Nicobar Islands": "AN",
+        "Chandigarh": "CH",
+        "Dadra and Nagar Haveli and Daman and Diu": "DN",
+        "Delhi": "DL",
+        "Jammu and Kashmir": "JK",
+        "Ladakh": "LA",
+        "Lakshadweep": "LD",
+        "Puducherry": "PY"
+    };
+
+    var nvPostcodeDebounceTimers = {};
+
+    $(document.body).on('input change', '#billing_postcode, #shipping_postcode', function () {
+        var $input = $(this);
+        var id = $input.attr('id');
+        var isBilling = (id === 'billing_postcode');
+        var $stateSelect = isBilling ? $('#billing_state') : $('#shipping_state');
+
+        if (!$stateSelect.length) return;
+
+        // Clean value: keep only digits
+        var pincode = $input.val().replace(/\D/g, '');
+        if ($input.val() !== pincode) {
+            $input.val(pincode);
+        }
+
+        // Only trigger on exactly 6 digits
+        if (pincode.length !== 6) {
+            return;
+        }
+
+        clearTimeout(nvPostcodeDebounceTimers[id]);
+        nvPostcodeDebounceTimers[id] = setTimeout(function () {
+            $.ajax({
+                url: 'https://api.postalpincode.in/pincode/' + pincode,
+                method: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    if (response && response[0] && response[0].Status === 'Success' && response[0].PostOffice && response[0].PostOffice[0]) {
+                        var apiState = response[0].PostOffice[0].State;
+                        if (apiState) {
+                            var stateCode = nvStateMap[apiState];
+                            if (stateCode) {
+                                if ($stateSelect.val() !== stateCode) {
+                                    $stateSelect.val(stateCode).trigger('change');
+                                    // If select2 is active, trigger it to update visually
+                                    if ($stateSelect.hasClass('select2-hidden-accessible')) {
+                                        $stateSelect.trigger('change.select2');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }, 400);
     });
 
     /* ─── Initialize ─── */

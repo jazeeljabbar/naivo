@@ -534,10 +534,10 @@
             pillsHtml += '<span class="nv-qv-pill" style="background:' + d.profile_bg + ';color:' + d.profile_color + ';border-color:' + d.profile_color + '20;">' + pIcon + d.profile_text + '</span>';
         }
         if (d.roast_text) {
-            pillsHtml += '<span class="nv-qv-pill nv-qv-pill-roast"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>' + d.roast_text + '</span>';
+            pillsHtml += '<span class="nv-qv-pill nv-qv-pill-roast"><img src="/wp-content/uploads/2024/09/coffee-beans.png" alt="roast" width="16" height="16" style="margin-right: 4px; object-fit: contain;">' + d.roast_text + '</span>';
         }
         if (d.country_text) {
-            pillsHtml += '<span class="nv-qv-pill nv-qv-pill-country"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + d.country_text + '</span>';
+            pillsHtml += '<span class="nv-qv-pill nv-qv-pill-country"><img src="/wp-content/uploads/2024/09/location-04.png" alt="location" width="16" height="16" style="margin-right: 4px; object-fit: contain;">' + d.country_text + '</span>';
         }
 
         // ── Weight pills HTML ─────────────────────────────────
@@ -643,13 +643,16 @@
     $(document).on('click', '.nv-quick-view-btn, a[href*="/product/"]', function(e) {
         var $btn = $(this);
         
+        // If it's a Buy Now button/link (or has text "Buy Now"), do not intercept - let it navigate
+        var text = $btn.text().trim().toLowerCase();
+        var innerLabel = $btn.find('.w-btn-label').text().trim().toLowerCase();
+        if (text === 'buy-now' || text === 'buy now' || innerLabel === 'buy-now' || innerLabel === 'buy now' || $btn.hasClass('nv-buy-btn')) {
+            return; // Let it navigate to product detail page as normal
+        }
+        
         // If it's a standard product link but doesn't have "Buy Now" text, don't intercept
         if (!$btn.hasClass('nv-quick-view-btn')) {
-            var text = $btn.text().trim().toLowerCase();
-            var innerLabel = $btn.find('.w-btn-label').text().trim().toLowerCase();
-            if (text !== 'buy-now' && text !== 'buy now' && innerLabel !== 'buy-now' && innerLabel !== 'buy now') {
-                return; // Let it navigate to product detail page as normal
-            }
+            return; // Let it navigate to product detail page as normal
         }
         
         e.preventDefault();

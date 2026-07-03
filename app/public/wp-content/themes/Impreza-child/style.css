@@ -287,7 +287,7 @@ Author URI: http://us-themes.com/
     background-repeat: no-repeat;
     background-size: contain;
     position: absolute;
-    background-image: url('https://naivo.in/wp-content/uploads/2024/08/location-04.png');
+    background-image: url('/wp-content/uploads/2024/09/location-04.png');
 }
 /* .homepagebanner {
     min-height: calc(125vh - 45px) !important;
@@ -368,37 +368,93 @@ Author URI: http://us-themes.com/
     border-radius: 10px;
 }
 .home_product_location i  {
+    display: inline-block;
     content: '';
     height: 18px;
     width: 18px;
     background-repeat: no-repeat;
     background-size: contain;
-    background-image: url('https://naivo.in/wp-content/uploads/2024/08/location-04.png');
+    background-image: url('/wp-content/uploads/2024/09/location-04.png');
+    vertical-align: middle;
 }
 .home_product_location i:before  {
     content: none;
 }
-.new_bdge:before  {
+/* =============================================
+   Homepage product card status badges
+   Injected as real HTML by naivo_homepage_badge_js()
+   Styled to exactly match the shop page .nv-badges-container
+   ============================================= */
+
+/* Ensure the outer card wrapper is the positioning context */
+.layout_295 .w-grid-item-h,
+.layout_978 .w-grid-item-h {
+    position: relative !important;
+}
+
+/* Badge container — mirrors .nv-badges-container */
+.hp-nv-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    background: #151516;
+    border-radius: 0px 10px 0px 4px;
+    white-space: nowrap;
+    font-family: inherit;
+    pointer-events: none;
+    /* Text — mirrors .nv-badge */
+    color: rgba(255, 255, 255, 0.70);
+    font-size: 12px;
+    line-height: 16.39px;
+    text-transform: uppercase;
+    font-weight: 500;
+    position: relative;
+    position: absolute; /* re-declare to win over relative above */
+}
+
+/* NEW badge icon via ::before — mirrors .nv-badge.new:before */
+.hp-nv-badge--new {
+    padding: 7px 25px 7px 35px;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+.hp-nv-badge--new::before {
     content: '';
-    height: 18px;
-    width: 12px;
-    left: 17px;
+    height: 16px;
+    width: 11px;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
     position: absolute;
     background-repeat: no-repeat;
     background-size: contain;
-    background-image: url('https://naivo.in/wp-content/uploads/2024/08/bolt.png');
+    background-image: url('/wp-content/uploads/2024/08/bolt.png');
 }
-.best_bdge:before  {
+
+/* BESTSELLER badge icon via ::before — mirrors .nv-badge.bestseller:before */
+.hp-nv-badge--bestseller {
+    padding: 7px 12px 7px 35px;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+.hp-nv-badge--bestseller::before {
     content: '';
-    height: 18px;
-    width: 18px;
-    top: 5px;
+    height: 16px;
+    width: 16px;
+    top: 50%;
     left: 10px;
+    transform: translateY(-50%);
     position: absolute;
     background-repeat: no-repeat;
     background-size: contain;
-    background-image: url('https://naivo.in/wp-content/uploads/2024/08/star-best.png');
+    background-image: url('/wp-content/uploads/2024/08/star-best.png');
 }
+
 .home-products .layout_295 .seed  {
     padding-left: 38px !important;
 }
@@ -410,7 +466,7 @@ Author URI: http://us-themes.com/
     position: absolute;
     background-repeat: no-repeat;
     background-size: contain;
-    background-image: url('https://naivo.in/wp-content/uploads/2024/08/coffee-beans.png');
+    background-image: url('/wp-content/uploads/2024/09/coffee-beans.png');
 }
 .product_list_class .seed .w-post-elm-value {
     padding-left: 20px !important;
@@ -423,7 +479,7 @@ Author URI: http://us-themes.com/
     position: absolute;
     background-repeat: no-repeat;
     background-size: contain;
-    background-image: url(https://naivo.in/wp-content/uploads/2024/08/coffee-beans.png);
+    background-image: url('/wp-content/uploads/2024/09/coffee-beans.png');
 }
 .btn-100 .w-btn-wrapper, .btn-100 .w-btn
 {
@@ -802,7 +858,17 @@ Author URI: http://us-themes.com/
     bottom: -30px;
     right: -30px;
 }
-.tooltip-text  {
+.home-chain#For-Desktop .chain-img {
+    position: relative;
+    width: 100%;
+}
+.home-chain#For-Desktop .chain-inner {
+    position: relative;
+    width: 1000px;
+    height: 1100px; /* Force container height to prevent collapse and overflow of absolute elements */
+    margin: 0 auto;
+}
+.home-chain .tooltip-text  {
     position: absolute;
     top: -40px;
     left: -50%;
@@ -816,47 +882,42 @@ Author URI: http://us-themes.com/
     border: 1px solid #000;
     flex-wrap: wrap;
     flex-direction: row;
-}
-.point1 #fade  {
+    visibility: hidden;
+    pointer-events: none; /* Make sure the tooltip does not intercept hover/click events, letting them pass to icons below */
     opacity: 0;
-    transition: opacity 0.5s;
+    transition: opacity 0.5s, visibility 0.5s;
+    z-index: 10;
+}
+.home-chain .point1 .tooltip-text  {
     top: -35px;
     left: 245%;
 }
-.point2 #fade  {
-    opacity: 0;
-    transition: opacity 0.5s;
+.home-chain .point2 .tooltip-text  {
     top: 13px;
     left: 155%;
 }
-.point3 #fade  {
-    opacity: 0;
-    transition: opacity 0.5s;
+.home-chain .point3 .tooltip-text  {
     top: -50px;
     left: -525px;
 }
-.point4 #fade  {
-    opacity: 0;
-    transition: opacity 0.5s;
+.home-chain .point4 .tooltip-text  {
     top: -45px;
     left: 250px;
 }
-.point5 #fade  {
-    opacity: 0;
-    transition: opacity 0.5s;
+.home-chain .point5 .tooltip-text  {
     left: -48px;
     top: 135px;
 }
-.point6 #fade  {
-    opacity: 0;
-    transition: opacity 0.5s;
+.home-chain .point6 .tooltip-text  {
     top: 4px;
     left: -621%;
 }
-.hover-text:hover #fade  {
+.home-chain .hover-text:hover .tooltip-text,
+.home-chain .hover-text.active .tooltip-text  {
     opacity: 1;
+    visibility: visible;
 }
-.tooltip-text::after  {
+.home-chain .tooltip-text::after  {
     content: '';
     display: block;
     position: absolute;
@@ -869,19 +930,19 @@ Author URI: http://us-themes.com/
     border-bottom: 10px solid transparent;
     z-index: 1;
 }
-.point3 .tooltip-text::after  {
+.home-chain .point3 .tooltip-text::after  {
     right: -10px;
     border-left: 10px solid #000;
     left: auto;
     border-right: 0;
 }
-.point6 .tooltip-text::after  {
+.home-chain .point6 .tooltip-text::after  {
     right: -10px;
     border-left: 10px solid #000;
     left: auto;
     border-right: 0;
 }
-.point5 .tooltip-text::after  {
+.home-chain .point5 .tooltip-text::after  {
     right: 0;
     border-left: 10px solid transparent;
     left: 35px;
@@ -891,32 +952,31 @@ Author URI: http://us-themes.com/
     border-right: 10px solid transparent;
     border-bottom: 10px solid #000;
 }
-.hover-text:hover .tooltip-text  {
-    visibility: visible;
-}
-.hover-text:hover .hoverimg  {
+.home-chain .hover-text:hover .hoverimg,
+.home-chain .hover-text.active .hoverimg  {
     border-radius: 50%;
     border: 10px solid #F9DDC8;
     transition: opacity 0.5s;
 }
-.hover-text .hoverimg  {
+.home-chain .hover-text .hoverimg  {
     border-radius: 50%;
     border: 10px solid transparent;
 }
-.hover-text:hover span  {
+.home-chain .hover-text:hover span,
+.home-chain .hover-text.active span  {
     font-size: 21px;
     line-height: 26px;
     color: #151516;
 }
-#fade::before  {
+.home-chain .tooltip-text::before  {
     bottom: 15%;
     left: -2%;
 }
-.point5 #fade::before  {
+.home-chain .point5 .tooltip-text::before  {
     bottom: 88%;
     left: 10%;
 }
-.point6 #fade::before  {
+.home-chain .point6 .tooltip-text::before  {
     bottom: 15%;
     left: 97%;
 }
@@ -1989,3 +2049,23 @@ html.has-easy-notification-bar body.home .l-main > .l-section#For-Mobile {
     transform: none !important;
     background-color: #eaddd3;
 }
+
+/* Fix newsletter subscription send button font and background color */
+.input-container input.wpcf7-submit {
+    background: #f57c00 !important;
+    color: #ffffff !important;
+    padding: 0 25px !important;
+    font-weight: bold !important;
+    font-size: 14px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    cursor: pointer !important;
+    border: none !important;
+    flex: 0 0 auto !important;
+    transition: background-color 0.2s ease-in-out !important;
+}
+
+.input-container input.wpcf7-submit:hover {
+    background: #e66900 !important;
+}
+

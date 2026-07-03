@@ -36,13 +36,51 @@ if (empty($subtitle)) {
 // Roast and Country Origin terms
 $roasts = get_the_terms($product->get_id(), 'pa_roast');
 $countries = get_the_terms($product->get_id(), 'pa_country');
-$flavour_profile = get_the_terms($product->get_id(), 'pa_flavour-profile');
 
 $roast_text = (!empty($roasts) && !is_wp_error($roasts)) ? $roasts[0]->name : 'Roast';
+if ( $roast_text && $roast_text !== 'Roast' && strpos( strtolower( $roast_text ), 'roast' ) === false ) {
+    $roast_text .= ' Roast';
+}
 $country_text = (!empty($countries) && !is_wp_error($countries)) ? $countries[0]->name : 'Origin';
 
-$profile_text = (!empty($flavour_profile) && !is_wp_error($flavour_profile)) ? $flavour_profile[0]->name : '';
-$profile_slug = sanitize_title($profile_text);
+// Retrieve flavour profile terms dynamically (flavour-categories first, fallback to pa_flavour-profile)
+$fl_terms = get_the_terms($product->get_id(), 'flavour-categories');
+if (empty($fl_terms) || is_wp_error($fl_terms)) {
+    $fl_terms = get_the_terms($product->get_id(), 'pa_flavour-profile');
+}
+
+$profile_text = '';
+$profile_slug = '';
+$profile_icon = '';
+
+if (!empty($fl_terms) && !is_wp_error($fl_terms)) {
+    $term = $fl_terms[0];
+    $profile_text = $term->name;
+    $profile_slug = $term->slug;
+    
+    // Dynamic ACF image lookup matching Homepage
+    $image = get_field('flavour_thumbnail_image', $term->taxonomy . '_' . $term->term_id);
+    if (!empty($image) && is_array($image) && !empty($image['url'])) {
+        $profile_icon = wp_make_link_relative($image['url']);
+    }
+}
+
+// Fallback to static mapping using relative paths if database image is missing
+if (empty($profile_icon) && !empty($profile_slug)) {
+    $flavour_icons = array(
+        'bright-fruity' => '/wp-content/uploads/2024/08/blue-berry-icon.svg',
+        'rich-strong' => '/wp-content/uploads/2024/08/rich-icon.svg',
+        'bold-balanced' => '/wp-content/uploads/2024/08/bold-icon.svg',
+        'sweet-juicy' => '/wp-content/uploads/2024/08/orange-icon.svg',
+        'delicate-floral' => '/wp-content/uploads/2024/08/floral-icon.svg',
+    );
+    foreach ($flavour_icons as $slug_key => $icon_path) {
+        if (strpos($profile_slug, $slug_key) !== false) {
+            $profile_icon = $icon_path;
+            break;
+        }
+    }
+}
 
 // Get High-Resolution Featured and Hover images ('large' falls back to 'full')
 $primary_image_id = $product->get_image_id();
@@ -62,32 +100,22 @@ if ( ! empty( $gallery_image_ids ) ) {
         $hover_image_url = wp_get_attachment_image_url( $gallery_image_ids[0], 'full' );
     }
 }
-
-// Flavour Mappings matching Figma and Live naivo.in colors
-$flavour_icons = array(
-    'bright-fruity' => array('icon' => 'https://naivo.in/wp-content/uploads/2024/08/blue-berry-icon.svg', 'bg' => '#eef2ff', 'color' => '#3b5998'),
-    'rich-strong' => array('icon' => 'https://naivo.in/wp-content/uploads/2024/08/rich-icon.svg', 'bg' => '#FAF5F0', 'color' => '#8b5a2b'),
-    'bold-balanced' => array('icon' => 'https://naivo.in/wp-content/uploads/2024/08/bold-icon.svg', 'bg' => '#FAF5F0', 'color' => '#8b5a2b'),
-    'sweet-juicy' => array('icon' => 'https://naivo.in/wp-content/uploads/2024/08/orange-icon.svg', 'bg' => '#fff0e6', 'color' => '#e65c00'),
-    'delicate-floral' => array('icon' => 'https://naivo.in/wp-content/uploads/2024/08/floral-icon.svg', 'bg' => '#f3e8ff', 'color' => '#7e22ce'),
-);
-
-$profile_icon = '';
-$profile_bg = '#f0f4ff';
-$profile_color = '#3b5998';
-
-foreach ($flavour_icons as $slug_key => $data) {
-    if (strpos($profile_slug, $slug_key) !== false) {
-        $profile_icon = $data['icon'];
-        $profile_bg = $data['bg'];
-        $profile_color = $data['color'];
-        break;
-    }
-}
 ?>
 
 <div <?php wc_product_class( 'nv-product-card', $product ); ?>>
     <div class="nv-product-img">
+        <?php 
+        $is_new = has_term( 'new-arrivals', 'product_cat', $product->get_id() );
+        $is_bestseller = has_term( 'best-sellers', 'product_cat', $product->get_id() );
+        if ($is_new || $is_bestseller) : ?>
+            <div class="nv-badges-container">
+                <?php if ($is_bestseller) : ?>
+                    <div class="nv-badge bestseller">Bestseller</div>
+                <?php elseif ($is_new) : ?>
+                    <div class="nv-badge new">New</div>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
         <a href="<?php echo esc_url($product->get_permalink()); ?>" class="nv-product-image-container">
             <img src="<?php echo esc_url( $primary_image_url ); ?>" class="nv-primary-image" alt="<?php echo esc_attr( $title ); ?>" loading="lazy" decoding="async">
             <?php if ( $hover_image_url ) : ?>
@@ -104,11 +132,11 @@ foreach ($flavour_icons as $slug_key => $data) {
 
         <div class="nv-overlay-badges">
             <span class="nv-overlay-badge left">
-                <svg class="nv-badge-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                <img src="/wp-content/uploads/2024/09/coffee-beans.png" alt="roast" width="16" height="16" style="object-fit: contain;">
                 <?php echo esc_html($roast_text); ?>
             </span>
             <span class="nv-overlay-badge right">
-                <svg class="nv-badge-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <img src="/wp-content/uploads/2024/09/location-04.png" alt="location" width="16" height="16" style="object-fit: contain;">
                 <?php echo esc_html($country_text); ?>
             </span>
         </div>
@@ -117,9 +145,9 @@ foreach ($flavour_icons as $slug_key => $data) {
     <div class="nv-product-info">
         <div class="nv-badge-price-row">
             <?php if (!empty($profile_text)): ?>
-                <div class="nv-flavour-badge" style="background: <?php echo esc_attr($profile_bg); ?> !important; color: <?php echo esc_attr($profile_color); ?> !important; border: 1px solid <?php echo esc_attr($profile_color); ?>33 !important;">
+                <div class="fl-tag <?php echo esc_attr($profile_slug); ?>">
                     <?php if ($profile_icon): ?>
-                        <img src="<?php echo esc_url($profile_icon); ?>" alt="icon" class="nv-flavour-emoji">
+                        <img decoding="async" src="<?php echo esc_url($profile_icon); ?>" alt="">
                     <?php endif; ?>
                     <?php echo esc_html($profile_text); ?>
                 </div>
@@ -196,7 +224,7 @@ foreach ($flavour_icons as $slug_key => $data) {
 
                 <!-- Buy Now Button -->
                 <a href="<?php echo esc_url( $product->get_permalink() ); ?>"
-                   class="nv-buy-btn nv-quick-view-btn"
+                   class="nv-buy-btn"
                    data-product-id="<?php echo esc_attr( $product->get_id() ); ?>">
                     Buy Now
                 </a>

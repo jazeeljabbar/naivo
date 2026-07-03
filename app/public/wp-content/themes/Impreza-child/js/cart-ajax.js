@@ -28,41 +28,214 @@
     }
 
     /**
-     * Move coupon section from header to footer.
-     * New order: Best Selling (order 1) → Coupon (order 2) → Subtotal (order 3)
+     * AJAX apply coupon in Side Cart
      */
-    function nvRelocateCoupon() {
-        var $cart = $('.vi-wcaio-sidebar-cart');
-        if (!$cart.length) return;
-
-        var $couponWrap = $cart.find('.vi-wcaio-sidebar-cart-header-coupon-wrap');
-        var $footerWrap = $cart.find('.vi-wcaio-sidebar-cart-footer-wrap');
-
-        if ($couponWrap.length && $footerWrap.length) {
-            // Clone and move coupon to footer if not already done
-            if (!$footerWrap.find('.nv-footer-coupon-moved').length) {
-                var $couponClone = $couponWrap.clone()
-                    .removeClass('vi-wcaio-sidebar-cart-header-coupon-wrap')
-                    .addClass('nv-footer-coupon-moved')
-                    .css('display', 'flex');
-                $footerWrap.append($couponClone);
-
-                // Update placeholder text
-                $couponClone.find('.vi-wcaio-coupon-code').attr('placeholder', 'Got Coupon code?');
-
-                // Bind the apply button on clone
-                $couponClone.find('.vi-wcaio-bt-coupon-code').on('click', function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    var code = $couponClone.find('.vi-wcaio-coupon-code').val();
-                    $couponWrap.find('.vi-wcaio-coupon-code').val(code);
-                    $couponWrap.find('.vi-wcaio-bt-coupon-code').trigger('click');
-                });
-            }
-
-            // Hide the original header coupon
-            $couponWrap.css('display', 'none');
+    function nvApplyCouponAJAX(code, $section, $promoBtn) {
+        var $applyBtn = $section.find('.nv-cart-coupon-apply-btn');
+        var $feedback = $section.find('.nv-cart-coupon-feedback-message');
+        
+        $applyBtn.prop('disabled', true).text('APPLYING...');
+        if ($promoBtn) {
+            $promoBtn.prop('disabled', true).text('...');
         }
+        $feedback.removeClass('success error').hide();
+        
+        var $loading = $('.vi-wcaio-sidebar-cart-wrap').find('.vi-wcaio-sidebar-cart-loading-wrap');
+        $loading.removeClass('vi-wcaio-disabled');
+        
+        $.ajax({
+            url: (typeof wc_add_to_cart_params !== 'undefined' ? wc_add_to_cart_params.ajax_url : '/wp-admin/admin-ajax.php'),
+            type: 'POST',
+            data: {
+                action: 'naivo_side_cart_apply_coupon',
+                coupon_code: code
+            },
+            success: function (response) {
+                $applyBtn.prop('disabled', false).text('APPLY COUPON');
+                if ($promoBtn) {
+                    $promoBtn.prop('disabled', false);
+                }
+                $loading.addClass('vi-wcaio-disabled');
+                
+                if (response.success) {
+                    $feedback.addClass('success').text('Coupon applied!').show();
+                    $section.find('.nv-cart-coupon-input').val('');
+                    
+                    // Replace fragments
+                    if (response.data && response.data.fragments) {
+                        $.each(response.data.fragments, function (selector, html) {
+                            $(selector).replaceWith(html);
+                        });
+                    }
+                    
+                    $(document.body).trigger('wc_fragments_refreshed');
+                    $(document).trigger('viwcaio_after_update_cart');
+                } else {
+                    var msg = response.data && response.data.message ? response.data.message : 'Invalid coupon.';
+                    $feedback.addClass('error').text(msg).show();
+                }
+            },
+            error: function () {
+                $applyBtn.prop('disabled', false).text('APPLY COUPON');
+                if ($promoBtn) {
+                    $promoBtn.prop('disabled', false).text('APPLY');
+                }
+                $loading.addClass('vi-wcaio-disabled');
+                $feedback.addClass('error').text('An error occurred. Please try again.').show();
+            }
+        });
+    }
+
+    /**
+     * AJAX remove coupon in Side Cart
+     */
+    function nvRemoveCouponAJAX(code, $btn) {
+        var $loading = $('.vi-wcaio-sidebar-cart-wrap').find('.vi-wcaio-sidebar-cart-loading-wrap');
+        $loading.removeClass('vi-wcaio-disabled');
+        
+        $.ajax({
+            url: (typeof wc_add_to_cart_params !== 'undefined' ? wc_add_to_cart_params.ajax_url : '/wp-admin/admin-ajax.php'),
+            type: 'POST',
+            data: {
+                action: 'naivo_side_cart_remove_coupon',
+                coupon_code: code
+            },
+            success: function (response) {
+                $loading.addClass('vi-wcaio-disabled');
+                if (response.success) {
+                    // Replace fragments
+                    if (response.data && response.data.fragments) {
+                        $.each(response.data.fragments, function (selector, html) {
+                            $(selector).replaceWith(html);
+                        });
+                    }
+                    
+                    $(document.body).trigger('wc_fragments_refreshed');
+                    $(document).trigger('viwcaio_after_update_cart');
+                    
+                    // Show a brief success message
+                    setTimeout(function() {
+                        var $feedback = $('.nv-cart-coupon-feedback-message');
+                        if ($feedback.length) {
+                            $feedback.addClass('success').text('Coupon removed!').show();
+                            setTimeout(function() {
+                                $feedback.fadeOut(500, function() {
+                                    $feedback.removeClass('success').text('');
+                                });
+                            }, 2500);
+                        }
+                    }, 100);
+                }
+            },
+            error: function () {
+                $loading.addClass('vi-wcaio-disabled');
+            }
+        });
+    }
+
+    // Set up delegated events once on document ready
+    $(document).ready(function () {
+        $(document.body).on('click', '.nv-cart-coupon-apply-btn', function (e) {
+            e.preventDefault();
+            var $section = $(this).closest('.nv-cart-discount-section');
+            var code = $section.find('.nv-cart-coupon-input').val().trim();
+            if (!code) return;
+            nvApplyCouponAJAX(code, $section);
+        });
+        
+        $(document.body).on('keypress', '.nv-cart-coupon-input', function (e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                var $section = $(this).closest('.nv-cart-discount-section');
+                var code = $(this).val().trim();
+                if (!code) return;
+                nvApplyCouponAJAX(code, $section);
+            }
+        });
+
+
+        $(document.body).on('click', '.nv-cart-remove-coupon', function (e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var code = $btn.data('coupon');
+            if (!code) return;
+            nvRemoveCouponAJAX(code, $btn);
+        });
+    });
+
+    /**
+     * Update Side Cart totals based on the latest coupon data
+     */
+    function nvUpdateTotalsAndCouponUI() {
+        var $script = $('#nv-cart-coupon-data');
+        if (!$script.length) return;
+        
+        try {
+            var data = JSON.parse($script.html());
+            if (!data) return;
+            
+            var $footerWrap = $('.vi-wcaio-sidebar-cart-footer-wrap');
+            if (!$footerWrap.length) return;
+            
+            // Update Subtotal amount to reflect the discount (if any applied)
+            var $subtotalVal = $footerWrap.find('.vi-wcaio-sidebar-cart-footer-cart_total1');
+            if ($subtotalVal.length) {
+                if (data.discount_total > 0) {
+                    $subtotalVal.html(data.total_html);
+                } else {
+                    $subtotalVal.html(data.subtotal_html);
+                }
+            }
+            
+            // Render Applied Coupon lines in the Subtotal area (order: 32)
+            var $discountContainer = $footerWrap.find('.nv-cart-discount-lines-container');
+            if (data.discount_total > 0 && data.applied_coupons.length > 0) {
+                if (!$discountContainer.length) {
+                    $discountContainer = $('<div class="nv-cart-discount-lines-container"></div>');
+                    $footerWrap.append($discountContainer);
+                }
+                
+                var linesHtml = '';
+                $.each(data.applied_coupons, function (i, coupon) {
+                    linesHtml += '<div class="nv-cart-discount-line" data-code="' + coupon.code + '">' +
+                        '<span class="nv-cart-discount-label">Discount (' + coupon.code + ')</span>' +
+                        '<span class="nv-cart-discount-value">' + coupon.amount_html + 
+                        ' <button type="button" class="nv-cart-remove-coupon" data-coupon="' + coupon.code + '">Remove</button></span>' +
+                        '</div>';
+                });
+                $discountContainer.html(linesHtml).show();
+            } else {
+                if ($discountContainer.length) {
+                    $discountContainer.hide().empty();
+                }
+            }
+        } catch (e) {
+            console.error("Error parsing cart coupon data:", e);
+        }
+    }
+
+    /**
+     * Inject coupon section into the Side Cart (Cart Drawer)
+     */
+    function nvEnhanceCartCoupons() {
+        var $footerWrap = $('.vi-wcaio-sidebar-cart-footer-wrap');
+        if (!$footerWrap.length) return;
+
+        // Hide original relocated coupon if it exists
+        $footerWrap.find('.nv-footer-coupon-moved').hide();
+
+        if (!$footerWrap.find('.nv-cart-discount-section').length) {
+            var $couponSection = $('<div class="nv-cart-discount-section">' +
+                '<div class="nv-cart-coupon-inline">' +
+                '<input type="text" class="nv-cart-coupon-input" placeholder="Enter discount code or Gift card" autocomplete="one-time-code" />' +
+                '<button type="button" class="nv-cart-coupon-apply-btn">APPLY COUPON</button>' +
+                '</div>' +
+                '<div class="nv-cart-coupon-feedback-message"></div>' +
+                '</div>');
+            $footerWrap.append($couponSection);
+        }
+
+        nvUpdateTotalsAndCouponUI();
     }
 
     /**
@@ -162,8 +335,9 @@
 
                     // Label mapping: WooCommerce attr names → Figma display names
                     var labelMap = {
-                        'grind size': 'Filter',
-                        'select grind size': 'Filter'
+                        'grind size': 'Grind Size',
+                        'select grind size': 'Grind Size',
+                        'filter': 'Grind Size'
                     };
 
                     var html = '';
@@ -223,10 +397,12 @@
                     });
 
                     $meta.html(html);
+                    nvInjectGrindSizeLink();
                 },
                 error: function () {
                     // Fallback: render static pills
                     nvRenderStaticPills($meta, currentValues);
+                    nvInjectGrindSizeLink();
                 }
             });
         });
@@ -246,6 +422,74 @@
         });
         $meta.html(html);
     }
+
+    /**
+     * Handle "Know about Grind Size" click inside side cart
+     */
+    $(document).on('click', '.nv-cart-grind-link', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var $trigger = $('.nv-global-grind-popup-wrapper .w-popup-trigger');
+        if (!$trigger.length) {
+            $trigger = $('.nv-relocated-grind, button.w-popup-trigger:contains("Grind"), .size-chart .w-popup-trigger, #grindpopup .w-popup-trigger');
+        }
+
+        if ($trigger.length) {
+            var $popup = $trigger.closest('.w-popup');
+            if (!$popup.length) {
+                $popup = $('.w-popup.size-chart, #grindpopup .w-popup');
+            }
+            if ($popup.length) {
+                if (!$popup.data('wPopup') && typeof $.fn.wPopup === 'function') {
+                    $popup.wPopup();
+                }
+                // Set high z-index on wrap and overlay so it stays on top of Side Cart when moved to body
+                $popup.find('.w-popup-overlay, .w-popup-wrap').css('z-index', '999999999');
+            }
+
+            // Trigger jQuery click event
+            $trigger.trigger('click');
+
+            // Dispatch native click event to guarantee theme handlers catch it
+            var el = $trigger[0];
+            if (el) {
+                var event = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                });
+                el.dispatchEvent(event);
+            }
+        }
+    });
+
+    /**
+     * Intercept Escape key in capture phase when size-chart popup is open
+     * to prevent the cart drawer from closing.
+     */
+    window.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' || e.keyCode === 27) {
+            var openPopups = document.querySelectorAll('.w-popup.size-chart.opened, .w-popup.size-chart .w-popup-wrap.opened, .w-popup.size-chart .w-popup-wrap.active');
+            var isPopupVisible = false;
+
+            if (openPopups.length > 0) {
+                isPopupVisible = true;
+            } else {
+                var wrap = document.querySelector('.w-popup.size-chart .w-popup-wrap');
+                if (wrap) {
+                    var style = window.getComputedStyle(wrap);
+                    if (style.display !== 'none' && style.opacity !== '0' && style.visibility !== 'hidden') {
+                        isPopupVisible = true;
+                    }
+                }
+            }
+
+            if (isPopupVisible) {
+                e.stopImmediatePropagation();
+            }
+        }
+    }, true); // useCapture = true
 
     /**
      * Handle variation dropdown change: find matching variation and swap cart item
@@ -558,15 +802,37 @@
     }
 
     /**
+     * Inject the "Know about Grind Size" link into the sidebar cart
+     * near all Grind Size dropdown wraps.
+     */
+    function nvInjectGrindSizeLink() {
+        var $wraps = $('.vi-wcaio-sidebar-cart-pd-wrap .nv-variation-select-wrap').filter(function () {
+            return $(this).find('.nv-variation-label').text().trim().toLowerCase() === 'grind size';
+        });
+
+        $wraps.each(function () {
+            var $wrap = $(this);
+            if (!$wrap.next('.nv-cart-grind-link').length) {
+                var linkHtml = '<a href="#" class="nv-cart-grind-link" style="font-size: 12px; text-decoration: underline; color: #959595; font-weight: 400; font-family: \'Manrope\', sans-serif; display: inline-flex; align-items: center; gap: 4px; vertical-align: middle; margin-left: 8px;">' +
+                    '<i class="fal fa-exclamation-circle" style="font-size: 13px; color: #959595;"></i>' +
+                    'Know about Grind Size' +
+                    '</a>';
+                $wrap.after(linkHtml);
+            }
+        });
+    }
+
+    /**
      * Apply all Figma enhancements to the sidebar cart
      */
     function nvApplySidebarEnhancements() {
         nvUpdateSidebarHeader();
-        nvRelocateCoupon();
+        nvEnhanceCartCoupons();
         nvMoveDeleteToQtyRow();
         nvBuildVariationDropdowns();
         nvRestructureFooter();
         nvInjectBestSellingAddButtons();
+        nvInjectGrindSizeLink();
     }
 
     /* ── Run enhancements after DOM ready & after updates ── */
@@ -698,10 +964,60 @@
         }, 800);
     }
 
-    /* ── Ensure WC AJAX add-to-cart is initialized ──────────── */
-    // WooCommerce loads `add-to-cart.min.js` which listens for clicks on `.ajax_add_to_cart`
-    // It collects ALL data attributes (including variation_id) and sends them via AJAX.
-    // Our server-side hook (wc_ajax_add_to_cart at priority 1) intercepts variable products.
-    // We just need to make sure our buttons have the right classes (done in PHP template).
+    /* ── Mobile Details Toggle & Image Hover Reset (Homepage + Shop Page) ── */
+    $(document).ready(function () {
+        function nvSetupMobileInfoButtons() {
+            if (window.innerWidth > 1024) return;
+
+            // Homepage cards: .w-grid-item.product
+            $('.w-grid-item.product').each(function () {
+                var $card = $(this);
+                var $imgArea = $card.find('.usg_post_image_1');
+                if ($imgArea.length && !$imgArea.find('.nv-mobile-details-toggle').length) {
+                    var $images = $imgArea.find('img');
+                    if ($images.length > 1) {
+                        var $toggle = $('<button class="nv-mobile-details-toggle" aria-label="Toggle details">' +
+                            '<svg class="nv-info-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>' +
+                            '<svg class="nv-close-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' +
+                            '</button>');
+                        $imgArea.append($toggle);
+                    }
+                }
+            });
+        }
+
+        // Run on load
+        nvSetupMobileInfoButtons();
+
+        // Run on window resize
+        var resizeTimer;
+        $(window).on('resize', function () {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(nvSetupMobileInfoButtons, 250);
+        });
+
+        // Global delegated click listener for details toggle (handles both homepage and shop cards)
+        $(document).on('click', '.nv-mobile-details-toggle', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            var $toggleBtn = $(this);
+            var $card = $toggleBtn.closest('.nv-product-card, .w-grid-item.product');
+            if ($card.length) {
+                $card.toggleClass('nv-show-details');
+
+                var $infoIcon = $toggleBtn.find('.nv-info-icon');
+                var $closeIcon = $toggleBtn.find('.nv-close-icon');
+
+                if ($card.hasClass('nv-show-details')) {
+                    $infoIcon.hide();
+                    $closeIcon.show();
+                } else {
+                    $infoIcon.show();
+                    $closeIcon.hide();
+                }
+            }
+        });
+    });
 
 })(jQuery);

@@ -23,9 +23,9 @@ function naivo_enqueue_shop_assets() {
     // Load on all pages so the side cart + badge update works everywhere
     wp_enqueue_style(
         'naivo-custom-shop',
-        get_stylesheet_directory_uri() . '/css/custom-shop.css',
+        get_stylesheet_directory_uri() . '/css/custom-shop-v2.css',
         array(),
-        filemtime( get_stylesheet_directory() . '/css/custom-shop.css' )
+        time()
     );
 
     // Cart AJAX handler — depends on jQuery + WooCommerce's add-to-cart script
@@ -55,6 +55,156 @@ function naivo_enqueue_shop_assets() {
     }
 }
 add_action( 'wp_enqueue_scripts', 'naivo_enqueue_shop_assets' );
+
+/**
+ * Inject homepage product card NEW / BESTSELLER badges via JS.
+ * The Impreza page builder puts product_cat-* classes on each article.
+ * We read those classes and inject a real badge <div> into the image
+ * wrapper (.product_list_class) so it's not clipped by overflow:hidden.
+ * Priority: Bestseller always wins over New.
+ */
+function naivo_homepage_badge_js() {
+    if ( ! is_front_page() && ! is_home() ) return;
+    ?>
+    <script>
+    (function() {
+        function injectBadges() {
+            var articles = document.querySelectorAll('article.w-grid-item');
+            articles.forEach(function(article) {
+                var isBest = article.classList.contains('product_cat-best-sellers');
+                var isNew  = article.classList.contains('product_cat-new-arrivals');
+
+                if (!isBest && !isNew) return;
+
+                // Use the outer card wrapper (not .product_list_class which has overflow:hidden)
+                var cardH = article.querySelector('.w-grid-item-h');
+                if (!cardH) return;
+
+                // Only inject once
+                if (cardH.querySelector('.hp-nv-badge')) return;
+
+                // Priority: Bestseller wins
+                var label;
+                if (isBest) {
+                    label = 'BESTSELLER';
+                } else {
+                    label = 'NEW';
+                }
+
+                var badge = document.createElement('div');
+                badge.className = 'hp-nv-badge hp-nv-badge--' + (isBest ? 'bestseller' : 'new');
+                badge.textContent = label;
+
+                // Ensure outer card wrapper is positioned so badge can anchor to it
+                if (getComputedStyle(cardH).position === 'static') {
+                    cardH.style.position = 'relative';
+                }
+                cardH.appendChild(badge);
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', injectBadges);
+        } else {
+            injectBadges();
+        }
+        // Also re-run after Owl Carousel / AJAX loads new slides
+        document.addEventListener('us_grid_data_added', injectBadges);
+        window.addEventListener('load', injectBadges);
+    })();
+    </script>
+    <?php
+}
+add_action( 'wp_footer', 'naivo_homepage_badge_js' );
+
+/**
+ * Fix Value Chain section images and setup interactions on the homepage.
+ * - Rewrites any absolute production image URLs to root-relative local paths.
+ * - Adds keyboard activation (Enter/Space) and focus handlers to value-chain points.
+ * - Injects accessible attributes (role="button", tabindex="0", aria-selected, aria-controls).
+ * - Implements hover and selection active-state logic strictly scoped under .home-chain.
+ */
+function naivo_fix_chain_images() {
+    if ( ! is_front_page() && ! is_home() ) return;
+    ?>
+    <script>
+    (function() {
+        function fixChainImages() {
+            var PROD  = 'https://naivo.in/wp-content/uploads/';
+            var LOCAL = '/wp-content/uploads/';
+            var sections = document.querySelectorAll('.home-chain, .chain_icon');
+            sections.forEach(function(section) {
+                section.querySelectorAll('img').forEach(function(img) {
+                    if (img.src && img.src.indexOf('naivo.in') !== -1) {
+                        img.src = img.src.replace(PROD, LOCAL);
+                    }
+                    if (img.dataset && img.dataset.src && img.dataset.src.indexOf('naivo.in') !== -1) {
+                        img.dataset.src = img.dataset.src.replace(PROD, LOCAL);
+                    }
+                });
+            });
+        }
+
+        function setupValueChainInteractions() {
+            var points = document.querySelectorAll('.home-chain .hover-text');
+            if (!points.length) return;
+
+            points.forEach(function(point, index) {
+                // Set button role and make focusable
+                point.setAttribute('role', 'button');
+                point.setAttribute('tabindex', '0');
+                point.setAttribute('aria-selected', 'false');
+
+                // Set up unique ID for the tooltip content region
+                var tooltip = point.querySelector('.tooltip-text');
+                if (tooltip) {
+                    var tooltipId = 'nv-tooltip-' + (index + 1);
+                    tooltip.setAttribute('id', tooltipId);
+                    tooltip.setAttribute('role', 'region');
+                    tooltip.setAttribute('aria-label', point.getAttribute('data-title') + ' Details');
+                    point.setAttribute('aria-controls', tooltipId);
+                }
+
+                function activatePoint() {
+                    points.forEach(function(p) {
+                        p.classList.remove('active');
+                        p.setAttribute('aria-selected', 'false');
+                    });
+                    point.classList.add('active');
+                    point.setAttribute('aria-selected', 'true');
+                }
+
+                // Activate on mouse hover, click, and keyboard focus
+                point.addEventListener('mouseenter', activatePoint);
+                point.addEventListener('click', activatePoint);
+                point.addEventListener('focus', activatePoint);
+
+                // Keyboard activation with Space and Enter
+                point.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault(); // Prevent Space bar from scrolling the page
+                        activatePoint();
+                    }
+                });
+            });
+        }
+
+        function initChain() {
+            fixChainImages();
+            setupValueChainInteractions();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initChain);
+        } else {
+            initChain();
+        }
+        window.addEventListener('load', initChain);
+    })();
+    </script>
+    <?php
+}
+add_action( 'wp_footer', 'naivo_fix_chain_images', 5 );
 
 /**
  * Enqueue Google Fonts (Manrope) for sidebar cart Figma match
@@ -571,8 +721,10 @@ add_shortcode('parent_and_child_categories', 'woo_parent_and_child_categories_li
 function enqueue_custom_woocommerce_styles() {
     // Check if WooCommerce is active
     if ( class_exists( 'WooCommerce' ) ) {
-        // Enqueue the custom CSS file
-        wp_enqueue_style( 'custom-woocommerce', get_stylesheet_directory_uri() . '/custom_css.css', array(), '1.0.0' );
+        // Enqueue the custom CSS file with cache busting
+        $css_path = get_stylesheet_directory() . '/custom_css.css';
+        $version = file_exists( $css_path ) ? filemtime( $css_path ) : '1.0.0';
+        wp_enqueue_style( 'custom-woocommerce', get_stylesheet_directory_uri() . '/custom_css.css', array(), $version );
     }
 }
 add_action( 'wp_enqueue_scripts', 'enqueue_custom_woocommerce_styles', 20 );
@@ -581,52 +733,91 @@ function naivo_home_hero_fit_width_css() {
     if ( ! is_front_page() && ! is_home() ) {
         return;
     }
-    $hero_image_url = get_stylesheet_directory_uri() . '/images/Banner-03.png';
+    $hero_image_url = get_stylesheet_directory_uri() . '/images/banner_naivo_bags.png';
     ?>
 	    <style id="naivo-home-hero-fit-width">
-            .home .l-main > section[id="For-Desktop"],
-            .home .l-main > section[id="For-Mobile"] {
-                position: relative;
+            body.home .l-main {
+                padding-top: 0 !important;
             }
-            .home .l-main > section[id="For-Desktop"] .n2-ss-slide-background-image,
-            .home .l-main > section[id="For-Mobile"] .n2-ss-slide-background-image {
+            .home .l-main > section[id="For-Desktop"]:not(.home-chain),
+            .home .l-main > section[id="For-Mobile"]:not(.home-chain) {
+                position: relative;
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+            }
+            .home .l-main > section[id="For-Desktop"]:not(.home-chain) > .l-section-h,
+            .home .l-main > section[id="For-Mobile"]:not(.home-chain) > .l-section-h {
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+            }
+            /* ── Force banner to fit the viewport ── */
+            .home .l-main > section[id="For-Desktop"]:not(.home-chain),
+            .home .l-main > section[id="For-Desktop"]:not(.home-chain) .n2-ss-slider,
+            .home .l-main > section[id="For-Desktop"]:not(.home-chain) .n2-ss-slider-wrapper,
+            .home .l-main > section[id="For-Desktop"]:not(.home-chain) .n2-ss-slide {
+                height: 100vh !important;
+                min-height: 100vh !important;
+                max-height: 100vh !important;
+                aspect-ratio: auto !important;
+            }
+            
+            .home .l-main > section[id="For-Mobile"]:not(.home-chain),
+            .home .l-main > section[id="For-Mobile"]:not(.home-chain) .n2-ss-slider,
+            .home .l-main > section[id="For-Mobile"]:not(.home-chain) .n2-ss-slider-wrapper,
+            .home .l-main > section[id="For-Mobile"]:not(.home-chain) .n2-ss-slide {
+                height: 55vh !important;
+                min-height: 55vh !important;
+                max-height: 55vh !important;
+                aspect-ratio: auto !important;
+            }
+
+            /* ── Keep image contain-scaled on desktop (prevent cropping) with a matching background gradient ── */
+            .home .l-main > section[id="For-Desktop"]:not(.home-chain) .n2-ss-slide-background-image {
+                background-image: url('<?php echo esc_url( $hero_image_url ); ?>'), linear-gradient(to bottom, #c9b499 0%, #c0ad8f 100%) !important;
+                background-size: contain, 100% 100% !important;
+                background-position: right bottom, center center !important;
+                background-repeat: no-repeat, no-repeat !important;
+            }
+            .home .l-main > section[id="For-Mobile"]:not(.home-chain) .n2-ss-slide-background-image {
                 background-image: url('<?php echo esc_url( $hero_image_url ); ?>') !important;
-                background-size: 100% auto !important;
-                background-position: top center !important;
+                background-color: #c9b499 !important;
+                background-size: contain !important;
+                background-position: bottom center !important;
                 background-repeat: no-repeat !important;
             }
-            .home .l-main > section[id="For-Desktop"] .n2-ss-slide-background-image picture,
-            .home .l-main > section[id="For-Mobile"] .n2-ss-slide-background-image picture,
-            .home .l-main > section[id="For-Desktop"] .n2-ss-slide-background-image img,
-            .home .l-main > section[id="For-Mobile"] .n2-ss-slide-background-image img,
-            .home .l-main > section[id="For-Desktop"] .n2-ss-slide-thumbnail,
-            .home .l-main > section[id="For-Mobile"] .n2-ss-slide-thumbnail {
-                opacity: 0 !important;
-                visibility: hidden !important;
-	        }
+
+            .home .l-main > section[id="For-Desktop"]:not(.home-chain) .n2-ss-slide-background-image picture,
+            .home .l-main > section[id="For-Mobile"]:not(.home-chain) .n2-ss-slide-background-image picture,
+            .home .l-main > section[id="For-Desktop"]:not(.home-chain) .n2-ss-slide-background-image img,
+            .home .l-main > section[id="For-Mobile"]:not(.home-chain) .n2-ss-slide-background-image img {
+                display: none !important;
+            }
+            /* ── Left-align overlay horizontally, center vertically on desktop ── */
             .home .nv-home-hero-overlay {
                 position: absolute;
                 z-index: 6;
-                top: 50%;
-                left: clamp(24px, 7vw, 96px);
-                transform: translateY(-50%);
-                max-width: 600px;
+                top: 50% !important;
+                left: clamp(24px, 6vw, 96px) !important;
+                transform: translateY(-50%) !important;
+                max-width: 42% !important;
+                text-align: left !important;
                 pointer-events: auto;
             }
             .home .nv-home-hero-overlay h1 {
                 margin: 0 0 16px;
-                color: #1f1a16;
+                color: #1f1a16 !important;
                 font-size: clamp(32px, 4.2vw, 56px);
                 line-height: 1.05;
                 font-weight: 800;
-                letter-spacing: 0;
+                text-shadow: none !important;
             }
             .home .nv-home-hero-overlay p {
                 margin: 0 0 28px;
-                color: #3d332b;
+                color: #5c554e !important;
                 font-size: clamp(18px, 1.8vw, 24px);
                 line-height: 1.35;
                 font-weight: 500;
+                text-shadow: none !important;
             }
             .home .nv-home-hero-overlay .nv-home-hero-button {
                 display: inline-flex;
@@ -634,85 +825,57 @@ function naivo_home_hero_fit_width_css() {
                 justify-content: center;
                 min-height: 48px;
                 padding: 0 30px;
-                border-radius: 0;
-                background: #1f1a16;
-                color: #fff !important;
+                border-radius: 4px;
+                background: #f57c00 !important;
+                color: #ffffff !important;
                 font-size: 13px;
                 line-height: 1;
                 font-weight: 800;
-                letter-spacing: 1.2px;
                 text-decoration: none !important;
+                letter-spacing: 0.05em;
                 text-transform: uppercase;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+                transition: background-color 0.2s ease-in-out !important;
             }
             .home .nv-home-hero-overlay .nv-home-hero-button:hover {
-                background: #3b3129;
+                background: #e66900 !important;
             }
             @media (max-width: 767px) {
-                /* ── Give the mobile hero section meaningful height ── */
-                .home .l-main > section[id="For-Mobile"] {
-                    min-height: 88vw !important;
-                }
-                /* ── Switch to cover so image fills the section height ── */
-                .home .l-main > section[id="For-Mobile"] .n2-ss-slide-background-image {
-                    background-size: cover !important;
-                    background-position: left center !important;
-                }
-                /* ── Force Smart Slider inner to respect the min-height ── */
-                .home .l-main > section[id="For-Mobile"] .n2-ss-align,
-                .home .l-main > section[id="For-Mobile"] .n2-padding,
-                .home .l-main > section[id="For-Mobile"] .n2-ss-slider,
-                .home .l-main > section[id="For-Mobile"] .n2-ss-slider-wrapper,
-                .home .l-main > section[id="For-Mobile"] .n2-ss-section-main-content {
-                    min-height: 88vw !important;
-                }
-                /* ── Overlay: bottom-anchored, left-aligned, full-width ── */
                 .home .nv-home-hero-overlay {
-                    top: auto !important;
-                    bottom: 0 !important;
-                    left: 0 !important;
-                    right: 0 !important;
+                    top: 65px !important;
+                    left: 20px !important;
+                    right: 20px !important;
                     transform: none !important;
-                    max-width: 100% !important;
-                    padding: 20px 20px 24px;
-                    background: linear-gradient(to top, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.6) 70%, rgba(255,255,255,0) 100%);
+                    max-width: calc(100% - 40px) !important;
+                    text-align: center !important;
                 }
                 .home .nv-home-hero-overlay h1 {
-                    margin-bottom: 6px;
-                    font-size: clamp(26px, 7.5vw, 34px);
-                    line-height: 1.1;
+                    margin-bottom: 6px !important;
+                    font-size: clamp(26px, 7.5vw, 34px) !important;
+                    color: #1f1a16 !important;
+                    text-shadow: none !important;
                 }
                 .home .nv-home-hero-overlay p {
-                    margin-bottom: 14px;
-                    font-size: clamp(13px, 3.8vw, 16px);
-                    line-height: 1.4;
+                    margin-bottom: 12px !important;
+                    font-size: clamp(15px, 4vw, 18px) !important;
+                    color: #5c554e !important;
+                    text-shadow: none !important;
                 }
                 .home .nv-home-hero-overlay .nv-home-hero-button {
-                    min-height: 48px;
-                    padding: 0 28px;
+                    min-height: 42px;
+                    padding: 0 24px;
                     font-size: 12px;
-                    letter-spacing: 1.5px;
-                }
-                /* ── Reduce excessive space below hero on mobile ── */
-                .home .l-main > section[id="For-Mobile"] + section {
-                    padding-top: 24px !important;
+                    background: #f57c00 !important;
+                    color: #ffffff !important;
+                    border-radius: 4px;
                 }
             }
             @media (max-width: 400px) {
-                .home .l-main > section[id="For-Mobile"] {
-                    min-height: 95vw !important;
-                }
-                .home .l-main > section[id="For-Mobile"] .n2-ss-align,
-                .home .l-main > section[id="For-Mobile"] .n2-padding,
-                .home .l-main > section[id="For-Mobile"] .n2-ss-slider,
-                .home .l-main > section[id="For-Mobile"] .n2-ss-slider-wrapper,
-                .home .l-main > section[id="For-Mobile"] .n2-ss-section-main-content {
-                    min-height: 95vw !important;
-                }
                 .home .nv-home-hero-overlay h1 {
-                    font-size: 26px;
+                    font-size: 26px !important;
                 }
                 .home .nv-home-hero-overlay p {
-                    font-size: 13px;
+                    font-size: 13px !important;
                 }
             }
 	    </style>
@@ -1024,7 +1187,6 @@ function disable_yoast_breadcrumb_schema( $pieces, $context ) {
 // Custom Shop Implementation
 function enqueue_custom_shop_assets() {
     $ver = time();
-    wp_enqueue_style( 'custom-shop-css', get_stylesheet_directory_uri() . '/css/custom-shop.css', array(), $ver );
     
     if ( is_shop() || is_product_taxonomy() ) {
         wp_enqueue_script( 'custom-shop-js', get_stylesheet_directory_uri() . '/js/shop-filter.js', array('jquery'), $ver, true );
@@ -1236,7 +1398,9 @@ add_filter( 'woocommerce_cart_item_name', function( $name, $cart_item, $cart_ite
         foreach ( $cart_item['variation'] as $attr_key => $attr_val ) {
             if ( empty( $attr_val ) ) continue;
             $label = wc_attribute_label( str_replace( 'attribute_', '', $attr_key ), $_product );
-            $label = str_ireplace( 'Select Grind Size', 'Grind', $label );
+            if ( strpos( strtolower( $label ), 'grind' ) !== false || strpos( strtolower( $label ), 'filter' ) !== false ) {
+                $label = 'Grind Size';
+            }
             $parts[] = '<span class="nv-var-label">' . esc_html( $label ) . ':</span> ' . esc_html( $attr_val );
         }
         if ( $parts ) {
@@ -1306,10 +1470,15 @@ add_action( 'woocommerce_review_order_before_order_total', function() {
  */
 add_filter( 'woocommerce_attribute_label', 'naivo_rename_pdp_labels', 10, 3 );
 function naivo_rename_pdp_labels( $label, $name, $product ) {
-    if ( is_product() ) {
-        if ( $name === 'pa_filter' || $name === 'pa_grind-size' || $name === 'Grind Size' || strpos(strtolower($label), 'grind size') !== false || strpos(strtolower($label), 'filter') !== false ) {
-            return 'SELECT GRIND SIZE'; // Keep it clean here, JS will add the icon
+    // Check if it's the filter/grind size attribute
+    if ( $name === 'pa_filter' || $name === 'pa_grind-size' || $name === 'Grind Size' || strpos(strtolower($label), 'grind size') !== false || strpos(strtolower($label), 'filter') !== false ) {
+        if ( is_product() ) {
+            return 'SELECT GRIND SIZE'; // PDP specific label
         }
+        return 'Grind Size'; // Everywhere else (cart, checkout, etc.)
+    }
+
+    if ( is_product() ) {
         if ( $name === 'pa_weight' || $name === 'Weight' || strpos(strtolower($label), 'weight') !== false ) {
             return 'WEIGHT';
         }
@@ -1367,10 +1536,6 @@ function naivo_inject_sticky_elements() {
         <?php
     }
     ?>
-        <!-- Sticky WhatsApp -->
-        <a href="https://wa.me/919686365058" class="nv-sticky-whatsapp" target="_blank" rel="nofollow">
-            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#fff"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.316 1.592 5.43 0 9.856-4.426 9.858-9.855.002-5.43-4.425-9.856-9.855-9.856-5.431 0-9.856 4.426-9.858 9.855 0 2.046.611 3.654 1.611 5.326l-1.017 3.71 3.845-.972zm11.366-7.06c-.349-.174-2.065-1.02-2.387-1.137-.322-.117-.557-.174-.79.174-.234.348-.905 1.137-1.11 1.369-.205.232-.41.261-.758.087-.348-.174-1.472-.542-2.803-1.728-1.035-.923-1.733-2.062-1.937-2.41-.205-.348-.022-.537.152-.711.156-.156.348-.406.522-.609.174-.203.232-.348.348-.58.116-.232.058-.435-.03-.609-.087-.174-.79-1.902-1.082-2.603-.284-.682-.572-.59-.79-.601-.204-.01-.439-.012-.673-.012s-.614.088-.936.435c-.322.348-1.23 1.203-1.23 2.93s1.258 3.393 1.434 3.625c.176.232 2.476 3.782 5.998 5.304.838.362 1.492.578 2.003.74.841.268 1.607.23 2.212.14.675-.102 2.065-.844 2.357-1.657.292-.812.292-1.508.205-1.656-.087-.148-.322-.232-.67-.406z"/></svg>
-        </a>
     <script>
         jQuery(document).ready(function($) {
             if ($('#nv-sticky-cta-bar').length) {
@@ -1665,3 +1830,236 @@ function naivo_fix_cart_variant_names( $item_data, $cart_item ) {
     }
     return $item_data;
 }
+
+/**
+ * Cache-bust the child theme's style.css stylesheet by appending its filemtime as the version.
+ */
+function naivo_cache_bust_child_theme_style() {
+    $style_path = get_stylesheet_directory() . '/style.css';
+    $version = file_exists( $style_path ) ? filemtime( $style_path ) : '1.0.0';
+    
+    wp_dequeue_style( 'theme-style' );
+    wp_deregister_style( 'theme-style' );
+    wp_enqueue_style(
+        'theme-style',
+        get_stylesheet_directory_uri() . '/style.css',
+        array(),
+        $version,
+        'all'
+    );
+}
+add_action( 'wp_enqueue_scripts', 'naivo_cache_bust_child_theme_style', 25 );
+
+/**
+ * Inject the Grind Size Chart popup page block (ID 13515) in the footer globally.
+ */
+add_action( 'wp_footer', 'naivo_inject_grind_size_popup_globally' );
+function naivo_inject_grind_size_popup_globally() {
+    // Do not output on single product pages as they already have the popup block rendered.
+    if ( ! function_exists( 'is_product' ) || ! is_product() ) {
+        echo '<div class="nv-global-grind-popup-wrapper">';
+        ?>
+        <div class="w-popup size-chart us_custom_ccf5f8a2 has_text_color w-btn-wrapper align_none">
+            <button class="w-popup-trigger type_btn w-btn us-btn-style_4 icon_atleft">
+                <i class="fal fa-exclamation-circle"></i>
+                <span class="w-btn-label">Know about Grind Size</span>
+            </button>
+            <div class="w-popup-overlay size-chart" style="background:rgba(0,0,0,0.85);"></div>
+            <div class="w-popup-wrap size-chart" style="--title-color:var(--color-content-heading);--title-bg-color:var(--color-content-bg-alt);--content-color:var(--color-content-text);--content-bg-color:var(--color-content-bg)">
+                <div class="w-popup-box animation_fadeIn closerpos_inside without_title" style="width:600px;">
+                    <div class="w-popup-box-h">
+                        <div class="w-popup-box-content" style="padding:5% 5% 0 5%;">
+                            <?php echo do_shortcode( '[us_page_block id="13515"]' ); ?>
+                        </div>
+                        <div class="w-popup-closer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+        echo '</div>';
+    }
+}
+
+/**
+ * AJAX endpoints for Side Cart coupon management.
+ */
+add_action( 'wp_ajax_naivo_side_cart_apply_coupon', 'naivo_side_cart_apply_coupon' );
+add_action( 'wp_ajax_nopriv_naivo_side_cart_apply_coupon', 'naivo_side_cart_apply_coupon' );
+function naivo_side_cart_apply_coupon() {
+    $coupon_code = isset( $_POST['coupon_code'] ) ? sanitize_text_field( $_POST['coupon_code'] ) : '';
+    
+    if ( empty( $coupon_code ) ) {
+        wp_send_json_error( array( 'message' => 'Please enter a coupon code.' ) );
+    }
+    
+    wc_clear_notices();
+    
+    if ( ! WC()->cart ) {
+        wp_send_json_error( array( 'message' => 'Cart not initialized.' ) );
+    }
+
+    $cart = WC()->cart;
+    
+    $applied = $cart->apply_coupon( wc_format_coupon_code( $coupon_code ) );
+    
+    if ( $applied ) {
+        $cart->calculate_totals();
+        WC_AJAX::get_refreshed_fragments(); // Calculates totals, formats JSON, and calls die()
+    } else {
+        $errors = wc_get_notices( 'error' );
+        $error_message = 'Invalid coupon code.';
+        if ( ! empty( $errors ) ) {
+            $error_message = strip_tags( $errors[0]['notice'] );
+        }
+        wc_clear_notices();
+        wp_send_json_error( array( 'message' => $error_message ) );
+    }
+}
+
+add_action( 'wp_ajax_naivo_side_cart_remove_coupon', 'naivo_side_cart_remove_coupon' );
+add_action( 'wp_ajax_nopriv_naivo_side_cart_remove_coupon', 'naivo_side_cart_remove_coupon' );
+function naivo_side_cart_remove_coupon() {
+    $coupon_code = isset( $_POST['coupon_code'] ) ? sanitize_text_field( $_POST['coupon_code'] ) : '';
+    
+    if ( empty( $coupon_code ) ) {
+        wp_send_json_error( array( 'message' => 'Coupon code is missing.' ) );
+    }
+    
+    if ( ! WC()->cart ) {
+        wp_send_json_error( array( 'message' => 'Cart not initialized.' ) );
+    }
+
+    $cart = WC()->cart;
+    $removed = $cart->remove_coupon( wc_format_coupon_code( $coupon_code ) );
+    
+    if ( $removed ) {
+        $cart->calculate_totals();
+        WC_AJAX::get_refreshed_fragments(); // Calculates totals, formats JSON, and calls die()
+    } else {
+        wp_send_json_error( array( 'message' => 'Failed to remove coupon.' ) );
+    }
+}
+
+/**
+ * Filter to append dynamic coupon data to WooCommerce AJAX fragments.
+ */
+add_filter( 'woocommerce_add_to_cart_fragments', 'naivo_cart_coupon_data_fragment', 99999 );
+function naivo_cart_coupon_data_fragment( $fragments ) {
+    if ( WC()->cart ) {
+        $applied_coupons = WC()->cart->get_applied_coupons();
+        $coupon_details = array();
+        
+        $subtotal = WC()->cart->get_subtotal();
+        $discount_total = WC()->cart->get_discount_total();
+        $total = WC()->cart->get_total();
+        
+        foreach ( $applied_coupons as $code ) {
+            $coupon = new WC_Coupon( $code );
+            $coupon_details[] = array(
+                'code'        => $code,
+                'label'       => $coupon->get_description() ? $coupon->get_description() : $code,
+                'amount_html' => '-' . wc_price( WC()->cart->get_coupon_discount_amount( $code ) ),
+            );
+        }
+        
+        $data = array(
+            'applied_coupons' => $coupon_details,
+            'subtotal_html'   => wc_price( $subtotal ),
+            'discount_html'   => $discount_total > 0 ? '-' . wc_price( $discount_total ) : '',
+            'discount_total'  => $discount_total,
+            'total_html'      => wc_price( $total ),
+        );
+        
+        $fragments['#nv-cart-coupon-data'] = '<script id="nv-cart-coupon-data" type="application/json">' . json_encode( $data ) . '</script>';
+    }
+    return $fragments;
+}
+
+/**
+ * Output initial coupon data on load.
+ */
+add_action( 'wp_footer', 'naivo_print_initial_cart_coupon_data' );
+function naivo_print_initial_cart_coupon_data() {
+    if ( WC()->cart ) {
+        $applied_coupons = WC()->cart->get_applied_coupons();
+        $coupon_details = array();
+        
+        $subtotal = WC()->cart->get_subtotal();
+        $discount_total = WC()->cart->get_discount_total();
+        $total = WC()->cart->get_total();
+        
+        foreach ( $applied_coupons as $code ) {
+            $coupon = new WC_Coupon( $code );
+            $coupon_details[] = array(
+                'code'        => $code,
+                'label'       => $coupon->get_description() ? $coupon->get_description() : $code,
+                'amount_html' => '-' . wc_price( WC()->cart->get_coupon_discount_amount( $code ) ),
+            );
+        }
+        
+        $data = array(
+            'applied_coupons' => $coupon_details,
+            'subtotal_html'   => wc_price( $subtotal ),
+            'discount_html'   => $discount_total > 0 ? '-' . wc_price( $discount_total ) : '',
+            'discount_total'  => $discount_total,
+            'total_html'      => wc_price( $total ),
+        );
+        echo '<script id="nv-cart-coupon-data" type="application/json">' . json_encode( $data ) . '</script>';
+    }
+}
+
+/**
+ * Bypass Google reCAPTCHA and spam validation on localhost.
+ */
+function nv_is_local_environment() {
+    if ( ! isset( $_SERVER['HTTP_HOST'] ) ) {
+        return false;
+    }
+    $host = $_SERVER['HTTP_HOST'];
+    $addr = $_SERVER['REMOTE_ADDR'] ?? '';
+    
+    return (
+        $addr === '127.0.0.1' ||
+        $addr === '::1' ||
+        strpos( $host, 'localhost' ) !== false ||
+        strpos( $host, '127.0.0.1' ) !== false ||
+        strpos( $host, '.local' ) !== false
+    );
+}
+
+if ( nv_is_local_environment() ) {
+    // 1. Dequeue Google reCAPTCHA v3 scripts to remove the "domain not supported" badge
+    add_action( 'wp_enqueue_scripts', 'nv_dequeue_recaptcha_on_localhost', 99 );
+    
+    // 2. Bypass the spam check (including reCAPTCHA verification) so submissions succeed
+    add_filter( 'wpcf7_spam', 'nv_bypass_spam_on_localhost', 99, 1 );
+
+    // 3. Remove Simple reCAPTCHA validation and footer script to prevent failure on localhost
+    add_action( 'init', 'nv_remove_cf7_simple_recaptcha_validation', 999 );
+
+    // 4. Skip mail sending on localhost so it returns success (green message) instead of mail_failed
+    add_filter( 'wpcf7_skip_mail', '__return_true' );
+}
+
+
+function nv_dequeue_recaptcha_on_localhost() {
+    wp_dequeue_script( 'google-recaptcha' );
+    wp_dequeue_script( 'wpcf7-recaptcha' );
+}
+
+function nv_bypass_spam_on_localhost( $spam ) {
+    return false;
+}
+
+function nv_remove_cf7_simple_recaptcha_validation() {
+    remove_filter( 'wpcf7_validate', 'cf7sr_verify_recaptcha', 20 );
+    remove_action( 'wp_footer', 'enqueue_cf7sr_recaptcha_script' );
+}
+
+
+
+
+
+
+
